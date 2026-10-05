@@ -1,49 +1,18 @@
-# Kaplanlar WebAR
+# Kaplanlar WebAR V9 – Premium Asset Sürümü
 
-QR ile açılan, uygulama kurulumu gerektirmeyen mobil WebAR deneyimi.
+Bu sürümde:
+- video bölümü kaldırıldı
+- yeni premium maskot assetleri eklendi
+- maskot akışı: selamlama -> AI gösterimi -> dönüş -> tekrar
+- daha premium cam panel / holografik arayüz tasarımı uygulandı
+- sürükleme ve pinch-zoom desteği korundu
 
-## Akış
-1. AR deneyimini başlat
-2. Kamera açılır
-3. Zemine/masaya dokun
-4. Maskot yürür ve el sallar
-5. “Dijital Yolculuğa Başla”
-6. Şifre ekranı — demo erişim kodu: `KAPLAN2026`
-7. Doğru kod girilince `assets/dijital-yolculuk.mp4` oynatılır
+## Yükleme
+1. GitHub repository içinde eski dosyaların üzerine bu sürümün dosyalarını yükleyin.
+2. Commit changes yapın.
+3. GitHub Pages birkaç dakika içinde güncellenecektir.
 
-> Not: GitHub Pages statik hosting olduğu için tarayıcı tarafındaki erişim kodu gerçek güvenlik sağlamaz; yalnızca kullanıcı akışı/görsel kapı görevi görür. Gerçek erişim kontrolü için backend doğrulaması gerekir.
+## Not
+Tarayıcı önbelleği eski sürümü gösterirse telefonda sayfayı sert yenileyin veya farklı sekmede açın.
 
-
-## V4
-- Güncellenmiş holografik kart metinleri
-- Düşünme ve hero animasyon döngüsü
-
-
-## V5
-- Düşünme balonu kaldırıldı
-- Kartlar maskottan uzağa taşındı
-- Idle nefes hareketi eklendi
-- Kartlara sırayla yönelme animasyonu eklendi
-- Holografik tarama ve hero loop eklendi
-
-
-## V6
-- Başlık daha yukarı taşındı
-- Kartlar uzaklaştırıldı ve açıklama satırları eklendi
-- Daha zengin giriş ve koreografi
-- Gelişmiş tarama ve hero animasyonu
-
-
-## V7 - Yeni Maskot Asset Seti
-- 4 ayrı yürüyüş karesi
-- öne dönüş pozu
-- idle pozu
-- sola işaret pozu
-- sağa işaret pozu
-- el sallama pozu
-- WebAR koreografisine doğrudan bağlandı
-
-
-## V8
-- Soyut yapay zeka çekirdeği tutan yeni mascot asseti eklendi
-- AI focus sahnesi ve bilgi kartı rozeti eklendi
+- Kalp hareketi kurumsal kimlik gereği kaldırıldı.
