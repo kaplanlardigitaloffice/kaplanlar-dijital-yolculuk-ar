@@ -32,3 +32,18 @@ QR ile açılan, uygulama kurulumu gerektirmeyen mobil WebAR deneyimi.
 - Kartlar uzaklaştırıldı ve açıklama satırları eklendi
 - Daha zengin giriş ve koreografi
 - Gelişmiş tarama ve hero animasyonu
+
+
+## V7 - Yeni Maskot Asset Seti
+- 4 ayrı yürüyüş karesi
+- öne dönüş pozu
+- idle pozu
+- sola işaret pozu
+- sağa işaret pozu
+- el sallama pozu
+- WebAR koreografisine doğrudan bağlandı
+
+
+## V8
+- Soyut yapay zeka çekirdeği tutan yeni mascot asseti eklendi
+- AI focus sahnesi ve bilgi kartı rozeti eklendi

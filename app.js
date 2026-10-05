@@ -11,6 +11,7 @@
   const guide = $('#placementGuide');
   const anchor = $('#arAnchor');
   const mascot = $('#mascot');
+  const aiFocusBadge = $('#aiFocusBadge');
   const journeyBtn = $('#journeyBtn');
   const passwordPanel = $('#passwordPanel');
   const closePassword = $('#closePassword');
@@ -22,12 +23,18 @@
   const closeVideo = $('#closeVideo');
   const errorBox = $('#errorBox');
 
-  const walkFrames = [1, 2, 3, 4].map(n => `assets/mascot_${n}.png`);
-  const focusLeftFrame = 'assets/mascot_3.png';
-  const focusRightFrame = 'assets/mascot_4.png';
-  const turnFrontFrame = 'assets/mascot_5.png';
-  const idleFrame = 'assets/mascot_6.png';
-  const waveFrame = 'assets/mascot_7.png';
+  const walkFrames = [
+    'assets/mascot_v7_walk_1.png',
+    'assets/mascot_v7_walk_2.png',
+    'assets/mascot_v7_walk_3.png',
+    'assets/mascot_v7_walk_4.png'
+  ];
+  const focusLeftFrame = 'assets/mascot_v7_point_left.png';
+  const focusRightFrame = 'assets/mascot_v7_point_right.png';
+  const turnFrontFrame = 'assets/mascot_v7_turn_front.png';
+  const idleFrame = 'assets/mascot_v7_idle.png';
+  const waveFrame = 'assets/mascot_v7_wave.png';
+  const aiCoreFrame = 'assets/mascot_v8_ai_core.png';
   const ACCESS_CODE = 'KAPLAN2026';
 
   let stream = null;
@@ -50,7 +57,7 @@
   };
 
   function preload() {
-    [...walkFrames, focusLeftFrame, focusRightFrame, turnFrontFrame, idleFrame, waveFrame].forEach(src => {
+    [...walkFrames, focusLeftFrame, focusRightFrame, turnFrontFrame, idleFrame, waveFrame, aiCoreFrame].forEach(src => {
       const img = new Image();
       img.src = src;
     });
@@ -103,8 +110,18 @@
 
   function resetStateClasses() {
     anchor.classList.remove(
-      'entering', 'walking', 'waving', 'idle', 'focus-left', 'focus-right', 'scan-mode', 'hero', 'portal-active'
+      'entering', 'walking', 'waving', 'idle', 'focus-left', 'focus-right', 'scan-mode', 'hero', 'portal-active', 'ai-core-mode'
     );
+  }
+
+  function hideAiBadge() {
+    aiFocusBadge.classList.add('is-hidden');
+    aiFocusBadge.setAttribute('aria-hidden', 'true');
+  }
+
+  function showAiBadge() {
+    aiFocusBadge.classList.remove('is-hidden');
+    aiFocusBadge.setAttribute('aria-hidden', 'false');
   }
 
   function scheduleNext(callback, delay) {
@@ -116,6 +133,7 @@
     clearTimeout(motionLoopTimer);
     resetStateClasses();
     clearChipFocus();
+    hideAiBadge();
 
     if (state === 'wave') {
       anchor.classList.add('waving');
@@ -146,15 +164,26 @@
       const side = chip?.dataset.focus || 'left';
       if (chip) chip.classList.add('is-active');
       anchor.classList.add(side === 'right' ? 'focus-right' : 'focus-left');
-      let toggle = false;
       mascot.src = side === 'right' ? focusRightFrame : focusLeftFrame;
       motionTimer = setInterval(() => {
+        mascot.classList.toggle('micro-shift');
+      }, 760);
+      scheduleNext(() => runSequence(), 1900);
+      return;
+    }
+
+    if (state === 'ai-core') {
+      anchor.classList.add('ai-core-mode');
+      const techChip = $(chipMap.tech);
+      if (techChip) techChip.classList.add('is-active');
+      showAiBadge();
+      let toggle = false;
+      mascot.src = aiCoreFrame;
+      motionTimer = setInterval(() => {
         toggle = !toggle;
-        mascot.src = toggle
-          ? (side === 'right' ? focusRightFrame : focusLeftFrame)
-          : turnFrontFrame;
-      }, 700);
-      scheduleNext(() => runSequence(), 1750);
+        mascot.classList.toggle('micro-shift', toggle);
+      }, 820);
+      scheduleNext(() => runSequence(), 2400);
       return;
     }
 
@@ -186,6 +215,7 @@
   const sequence = [
     ['focus', 'process'],
     ['focus', 'tech'],
+    ['ai-core'],
     ['focus', 'team'],
     ['focus', 'growth'],
     ['scan'],
@@ -204,12 +234,14 @@
     frameIndex = 0;
     let steps = 0;
     mascot.src = walkFrames[0];
+    mascot.classList.remove('micro-shift');
+    hideAiBadge();
     anchor.classList.add('portal-active', 'entering', 'walking');
     walkTimer = setInterval(() => {
       frameIndex = (frameIndex + 1) % walkFrames.length;
       mascot.src = walkFrames[frameIndex];
       steps += 1;
-      if (steps >= 22) {
+      if (steps >= 24) {
         clearInterval(walkTimer);
         walkTimer = null;
         mascot.src = turnFrontFrame;
@@ -219,7 +251,7 @@
           journeyBtn.classList.remove('is-hidden');
         }, 180);
       }
-    }, 130);
+    }, 145);
   }
 
   function placeMascot(x, y) {
@@ -256,7 +288,10 @@
     clearMotionTimers();
     resetStateClasses();
     clearChipFocus();
+    hideAiBadge();
     mascot.src = walkFrames[0];
+    mascot.classList.remove('micro-shift');
+    hideAiBadge();
     anchor.classList.add('is-hidden');
     guide.classList.remove('is-hidden');
     journeyBtn.classList.add('is-hidden');

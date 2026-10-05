@@ -236,3 +236,53 @@ button,input{font:inherit}button{color:inherit}.screen{position:fixed;inset:0}.i
   .chip-team{left:-39%;bottom:-5%}
   .chip-growth{right:-42%;bottom:-6%}
 }
+
+
+/* --- V7 dedicated mascot asset choreography --- */
+.mascot-wrap img{transition:opacity .12s ease, filter .18s ease, transform .18s ease}
+.mascot-wrap img.micro-shift{transform:translateZ(52px) translateY(-5px) scale(1.028) rotateZ(.8deg)}
+.ar-anchor.walking .mascot-stage{animation:walkTravelV7 .8s ease-in-out infinite alternate}
+@keyframes walkTravelV7{from{transform:rotateY(-12deg) translateX(4px)}to{transform:rotateY(-6deg) translateX(-4px)}}
+.ar-anchor.walking .mascot-wrap img{animation:walkBounceV7 .29s ease-in-out infinite alternate}
+@keyframes walkBounceV7{from{transform:translateZ(36px) translateY(-2px) scale(1.015)}to{transform:translateZ(44px) translateY(-9px) scale(1.035)}}
+.ar-anchor.waving .mascot-wrap img{animation:waveV7 1.15s ease-in-out infinite alternate}
+@keyframes waveV7{from{transform:translateZ(44px) rotateZ(-1deg)}to{transform:translateZ(53px) translateY(-5px) rotateZ(1.5deg) scale(1.025)}}
+.ar-anchor.idle .mascot-wrap img{animation:idleV7 2.25s ease-in-out infinite alternate}
+@keyframes idleV7{from{transform:translateZ(42px) translateY(0)}to{transform:translateZ(48px) translateY(-4px) scale(1.012)}}
+.ar-anchor.focus-left .mascot-wrap img,.ar-anchor.focus-right .mascot-wrap img{animation:presentV7 1.1s ease-in-out infinite alternate}
+@keyframes presentV7{from{transform:translateZ(45px)}to{transform:translateZ(55px) translateY(-5px) scale(1.025)}}
+.ar-anchor.hero .mascot-wrap img{animation:heroV7 1.85s ease-in-out infinite alternate}
+@keyframes heroV7{from{transform:translateZ(46px) scale(1.02)}to{transform:translateZ(58px) translateY(-6px) scale(1.05)}}
+
+
+/* --- V8 abstract AI core asset integration --- */
+.ai-focus-badge{
+  position:absolute;
+  z-index:16;
+  right:-18%;
+  top:-6%;
+  width:min(250px, 46vw);
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(180deg, rgba(19,24,38,.72), rgba(8,10,18,.82));
+  box-shadow:0 0 28px rgba(255,35,59,.18), inset 0 0 16px rgba(255,255,255,.05);
+  backdrop-filter:blur(14px);
+  transform:translateZ(64px);
+  transition:opacity .25s ease, transform .25s ease;
+}
+.ai-focus-badge.is-hidden{opacity:0;pointer-events:none;transform:translateY(10px) translateZ(64px)}
+.ai-focus-badge .badge-kicker{display:block;font-size:10px;letter-spacing:.28em;color:#85d3ff;margin-bottom:6px}
+.ai-focus-badge strong{display:block;font-size:16px;line-height:1.15;color:#fff;margin-bottom:6px}
+.ai-focus-badge small{display:block;font-size:11px;line-height:1.35;color:#cdd8f4}
+.ar-anchor.ai-core-mode .mascot-wrap img{animation:aiCoreFloat 1.65s ease-in-out infinite alternate;filter:drop-shadow(0 0 24px rgba(255,42,78,.22))}
+.ar-anchor.ai-core-mode .holo-title{animation:titlePulseV8 1.35s ease-in-out infinite}
+.ar-anchor.ai-core-mode .floor-ring{box-shadow:0 0 36px rgba(92,205,255,.45), inset 0 0 28px rgba(255,35,59,.25)}
+.ar-anchor.ai-core-mode .scan-column{opacity:.85}
+@keyframes aiCoreFloat{from{transform:translateZ(52px) translateY(0) scale(1.01)}to{transform:translateZ(64px) translateY(-7px) scale(1.04)}}
+@keyframes titlePulseV8{50%{transform:translateX(-50%) translateZ(70px) scale(1.03)}}
+@media (max-width:540px){
+  .ai-focus-badge{right:-10%;top:-14%;width:min(200px,58vw);padding:10px 12px}
+  .ai-focus-badge strong{font-size:13px}
+  .ai-focus-badge small{font-size:9px}
+}
