@@ -4,38 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#070a0f" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Kaplanlar Dijital Dönüşüm Yolculuğu — Executive WebAR</title>
+  <title>Kaplanlar AR</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="app" aria-live="polite">
+  <main id="app">
     <section id="intro" class="screen intro">
       <div class="intro-grid"></div>
       <div class="intro-shell">
-        <header class="intro-brandbar">
-          <div class="brand-lockup">
-            <div class="brand-mark" aria-hidden="true"><span></span></div>
-            <div>
-              <b>KAPLANLAR</b>
-              <small>DİJİTAL DÖNÜŞÜM YOLCULUĞU</small>
-            </div>
-          </div>
-          <span class="enterprise-label">EXECUTIVE AR EXPERIENCE</span>
-        </header>
-
-        <div class="intro-content intro-content-minimal">
-          <div class="intro-copy intro-copy-minimal">
-            <p class="eyebrow">YAPAY ZEKÂ LANSMANI</p>
-            <h1>Kaplanlar<br><strong>Dijital Dönüşüm Yolculuğu</strong></h1>
-            <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
-          </div>
-          <div class="intro-visual intro-visual-minimal">
-            <div class="visual-glow"></div>
-            <img src="assets/mascot_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
-          </div>
+        <img src="assets/kaplanlar_logo.png" alt="Kaplanlar" class="intro-logo" />
+        <div class="intro-core">
+          <img src="assets/frame_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
+          <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
         </div>
       </div>
     </section>
@@ -45,43 +26,39 @@
       <div class="camera-overlay"></div>
       <img src="assets/kaplanlar_logo.png" alt="Kaplanlar logosu" class="floating-logo" />
 
-      
-
       <div id="placementGuide" class="placement-guide">
         <div class="reticle"><span></span></div>
         <div>
-          <b>Yerleşim hazır</b>
-          <small>Maskotu yerleştirmek için zemine veya masaya dokunun</small>
+          <b>Yerleştirmek için dokunun</b>
+          <small>Maskotu zemine veya masaya yerleştirin</small>
         </div>
       </div>
 
-      <div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik Kaplanlar maskotu" data-mood="idle">
-        
-
+      <div id="arAnchor" class="ar-anchor is-hidden" data-mood="idle" role="img" aria-label="Kaplanlar artırılmış gerçeklik maskotu">
         <div class="mascot-stage">
-          <div class="scan-column"></div>
           <div class="floor-grid"></div>
           <div class="floor-ring"></div>
           <div class="voice-orb"></div>
-          <div class="voice-bars" aria-hidden="true">
-            <span></span><span></span><span></span><span></span><span></span>
-          </div>
+          <div class="voice-bars"><span></span><span></span><span></span><span></span><span></span></div>
           <div id="mascotFrame" class="mascot-frame">
-            <img id="mascotA" class="mascot-layer is-active" src="assets/mascot_idle.png" alt="Kaplanlar maskotu" draggable="false" />
-            <img id="mascotB" class="mascot-layer" src="assets/mascot_idle.png" alt="" draggable="false" />
+            <img id="mascotA" class="mascot-layer is-active" src="assets/frame_idle2.png" alt="Kaplanlar maskotu" draggable="false" />
+            <img id="mascotB" class="mascot-layer" src="assets/frame_idle2.png" alt="" draggable="false" />
           </div>
         </div>
       </div>
 
-      
+      <div class="fab-group">
+        <button id="replayBtn" class="fab-btn" aria-label="Sesi yeniden oynat">↻</button>
+        <button id="photoBtn" class="fab-btn" aria-label="Fotoğraf çek ve indir">📷</button>
+      </div>
 
-      <div class="experience-hint"><span>Sürükle</span><i></i><span>İki parmakla ölçekle</span></div>
+      <div id="toast" class="toast is-hidden"></div>
       <div id="errorBox" class="error-box is-hidden"></div>
+      <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
 
   <audio id="narration" preload="auto" src="assets/launch_voice.mp3"></audio>
-  <canvas id="captureCanvas" class="is-hidden"></canvas>
   <script src="app.js"></script>
 </body>
 </html>

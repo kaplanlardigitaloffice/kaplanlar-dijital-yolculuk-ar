@@ -1,8 +1,8 @@
-# Kaplanlar WebAR V19
+# Kaplanlar WebAR V20
 
-Bu sürümde arayüz sadeleştirildi:
-- alttaki sesli anlatım paneli kaldırıldı
-- maskot üstündeki başlık kaldırıldı
-- header kaldırıldı
-- logo sağ üstte şeffaf olarak konumlandırıldı
-- logo tek tık: sesi yeniden başlatır, çift tık: fotoğraf indirir
+Bu sürümde:
+- asset sayısı artırıldı
+- geçişler sese göre yeniden kurgulandı
+- maskot ekranın ortasında daha büyük konumlandırıldı
+- görünür fotoğraf çekme / indirme butonu eklendi
+- anlatım sonunda maskot sabite yakın, sakin bir bekleme akışına geçiyor
