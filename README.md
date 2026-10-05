@@ -1,7 +1,8 @@
-# Kaplanlar WebAR V18
+# Kaplanlar WebAR V19
 
-Bu sürümde:
-- fotoğraf çekme / PNG indirme özelliği eklendi
-- asset/ses senkronu yeniden ayarlandı
-- konuşma akışı daha doğal hale getirildi
-- GitHub Pages üzerinde yayınlanmaya hazır
+Bu sürümde arayüz sadeleştirildi:
+- alttaki sesli anlatım paneli kaldırıldı
+- maskot üstündeki başlık kaldırıldı
+- header kaldırıldı
+- logo sağ üstte şeffaf olarak konumlandırıldı
+- logo tek tık: sesi yeniden başlatır, çift tık: fotoğraf indirir

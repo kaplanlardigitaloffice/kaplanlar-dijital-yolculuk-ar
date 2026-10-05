@@ -229,3 +229,25 @@ img{max-width:100%;display:block}
 .ar-anchor.is-speaking .mascot-layer.is-active{animation:talkFlowSoft 2.2s ease-in-out infinite}
 @keyframes talkFlowSoft{0%,100%{transform:translateY(0) scale(1) rotate(0deg)}20%{transform:translateY(-1px) scale(1.003) rotate(-.08deg)}48%{transform:translateY(-3px) scale(1.008) rotate(.14deg)}72%{transform:translateY(-2px) scale(1.004) rotate(-.06deg)}}
 @media(max-width:640px){.photo-btn{width:40px;flex:0 0 40px}}
+
+
+/* V19 clean UI */
+.topbar,.caption-panel,.holo-title{display:none !important}
+.floating-logo{
+  position:absolute;
+  top:18px;
+  right:18px;
+  z-index:32;
+  width:min(180px,34vw);
+  height:auto;
+  opacity:.82;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.22));
+  pointer-events:auto;
+}
+.ar-anchor{width:min(64vw,410px);height:min(64vw,410px)}
+.experience-hint{bottom:16px}
+.error-box{bottom:56px}
+@media(max-width:640px){
+  .floating-logo{top:14px;right:14px;width:min(144px,38vw);opacity:.88}
+  .experience-hint{bottom:12px}
+}

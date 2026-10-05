@@ -43,22 +43,9 @@
     <section id="arView" class="screen ar-view is-hidden">
       <video id="camera" autoplay muted playsinline></video>
       <div class="camera-overlay"></div>
+      <img src="assets/kaplanlar_logo.png" alt="Kaplanlar logosu" class="floating-logo" />
 
-      <header class="topbar">
-        <div class="mini-brand">
-          <div class="brand-mark small"><span></span></div>
-          <div>
-            <b>KAPLANLAR</b>
-            <small>Dijital Dönüşüm Yolculuğu</small>
-          </div>
-        </div>
-        <div class="top-actions">
-          <button id="audioBtn" class="audio-btn" aria-label="Sesli tanıtımı oynat veya duraklat">Tanıtımı Oynat</button>
-          <button id="photoBtn" class="icon-btn photo-btn" aria-label="Fotoğraf çek">⌲</button>
-          <button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button>
-          <button id="resetBtn" class="icon-btn" aria-label="Sahneyi sıfırla">⌂</button>
-        </div>
-      </header>
+      
 
       <div id="placementGuide" class="placement-guide">
         <div class="reticle"><span></span></div>
@@ -69,11 +56,7 @@
       </div>
 
       <div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik Kaplanlar maskotu" data-mood="idle">
-        <div class="holo-title">
-          <span>KAPLANLAR</span>
-          <b>Dijital Dönüşüm Yolculuğu</b>
-          <small>AI LANSMAN AR DENEYİMİ</small>
-        </div>
+        
 
         <div class="mascot-stage">
           <div class="scan-column"></div>
@@ -90,19 +73,7 @@
         </div>
       </div>
 
-      <section class="caption-panel" id="captionPanel">
-        <div class="caption-header">
-          <div>
-            <span class="caption-eyebrow">SESLİ ANLATIM</span>
-            <b id="captionLabel">Deneyim hazır</b>
-          </div>
-          <span class="caption-status" id="captionStatus">Yerleştirme bekleniyor</span>
-        </div>
-        <p id="captionText" class="caption-text">Maskotu yerleştirin; ardından kurumsal sesli deneyim başlasın.</p>
-        <div class="progress-shell">
-          <div id="progressBar" class="progress-bar"></div>
-        </div>
-      </section>
+      
 
       <div class="experience-hint"><span>Sürükle</span><i></i><span>İki parmakla ölçekle</span></div>
       <div id="errorBox" class="error-box is-hidden"></div>
