@@ -7,38 +7,39 @@
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
-  const downloadPhotoBtn = $('#downloadPhotoBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
+  const sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
 
-  const frame = (name) => `assets/${name}`;
+  const frame = n => `assets/frame_${String(n).padStart(2,'0')}.png`;
 
-  // Finer sync without constant looping. Transitions happen on narration beats only.
-  const segments = [
-    { start:0.00, end:2.80, mood:'curious', frame:frame('frame_point3d.png'), ai:false },
-    { start:2.80, end:5.20, mood:'warm', frame:frame('frame_step1_3d.png'), ai:false },
-    { start:5.20, end:7.20, mood:'warm', frame:frame('frame_step2_3d.png'), ai:false },
-    { start:7.20, end:9.50, mood:'future', frame:frame('frame_step3_3d.png'), ai:false },
-    { start:9.50, end:11.80, mood:'future', frame:frame('frame_step4_3d.png'), ai:false },
-    { start:11.80, end:13.90, mood:'ai', frame:frame('frame_step5_3d.png'), ai:true },
-    { start:13.90, end:15.70, mood:'ai', frame:frame('frame_point3d.png'), ai:true },
-    { start:15.70, end:18.60, mood:'warm', frame:frame('frame_step2_3d.png'), ai:false },
-    { start:18.60, end:21.70, mood:'invite', frame:frame('frame_wave3d.png'), ai:false },
-    { start:21.70, end:24.20, mood:'invite', frame:frame('frame_point3d.png'), ai:false },
-    { start:24.20, end:28.10, mood:'warm', frame:frame('frame_step4_3d.png'), ai:false },
-    { start:28.10, end:30.00, mood:'curious', frame:frame('frame_step5_3d.png'), ai:false },
-    { start:30.00, end:33.20, mood:'energy', frame:frame('frame_wave3d.png'), ai:false }
+  const groups = {
+    curious:[frame(1),frame(2),frame(3),frame(4),frame(5),frame(6)],
+    invite:[frame(7),frame(8),frame(9),frame(10),frame(11),frame(12)],
+    explain:[frame(13),frame(14),frame(15),frame(16),frame(17),frame(18)],
+    calm:[frame(19),frame(20),frame(21),frame(22),frame(23),frame(24)]
+  };
+
+  // Timeline uses group-based animation. You can replace frame_01..frame_24 directly in assets/.
+  const scriptTimeline = [
+    { start:0.00, end:2.80, mood:'curious', group:'curious', fps:2.2, ai:false },
+    { start:2.80, end:7.20, mood:'warm', group:'calm', fps:1.8, ai:false },
+    { start:7.20, end:11.80, mood:'future', group:'explain', fps:2.4, ai:false },
+    { start:11.80, end:15.70, mood:'ai', group:'explain', fps:2.0, ai:true },
+    { start:15.70, end:18.60, mood:'warm', group:'calm', fps:1.7, ai:false },
+    { start:18.60, end:24.20, mood:'invite', group:'invite', fps:2.3, ai:false },
+    { start:24.20, end:28.10, mood:'warm', group:'calm', fps:1.7, ai:false },
+    { start:28.10, end:30.00, mood:'curious', group:'curious', fps:1.9, ai:false },
+    { start:30.00, end:33.20, mood:'energy', group:'invite', fps:2.0, ai:false }
   ];
 
-  const quietFrames = [frame('frame_step4_3d.png'), frame('frame_step5_3d.png')];
-
   let stream = null, placed = false, scale = 1.16, drag = null, pinchDistance = null;
-  let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, quietTimer = null;
-  let capturedBlob = null, capturedObjectUrl = null, capturedDataUrl = '', capturedFileName = '';
+  let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, groupTimer = null, currentGroupFrame = 0, quietTimer = null;
+  let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
 
   function showToast(msg){
     toast.textContent = msg;
     toast.classList.remove('is-hidden');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.add('is-hidden'), 2000);
+    showToast._t = setTimeout(() => toast.classList.add('is-hidden'), 1800);
   }
 
   async function unlockAudio(){
@@ -75,7 +76,7 @@
   }
 
   function stopCamera(){ if(stream) stream.getTracks().forEach(t => t.stop()); stream = null; }
-  function setAnchorPosition(x, y){ anchor.style.left = `${x}px`; anchor.style.top = `${y}px`; }
+  function setAnchorPosition(x,y){ anchor.style.left = `${x}px`; anchor.style.top = `${y}px`; }
   function visibleLayer(){ return activeLayer === 'A' ? mascotA : mascotB; }
 
   function crossfadeFrame(src){
@@ -90,44 +91,62 @@
     });
   }
 
-  function applySegment(index){
-    if(index < 0 || index >= segments.length || index === currentSegmentIndex) return;
-    currentSegmentIndex = index;
-    const seg = segments[index];
-    anchor.dataset.mood = seg.mood;
-    anchor.dataset.ai = seg.ai ? 'on' : 'off';
-    crossfadeFrame(seg.frame);
+  function stopGroupPlayback(){ clearInterval(groupTimer); groupTimer = null; }
+  function playGroup(groupName, fps = 2){
+    stopGroupPlayback();
+    const frames = groups[groupName] || groups.calm;
+    const interval = Math.max(350, 1000 / fps);
+    currentGroupFrame = 0;
+    crossfadeFrame(frames[0]);
+    if(frames.length <= 1) return;
+    groupTimer = setInterval(() => {
+      currentGroupFrame = (currentGroupFrame + 1) % frames.length;
+      crossfadeFrame(frames[currentGroupFrame]);
+    }, interval);
   }
 
-  function setQuietPose(frameSrc = quietFrames[0]){
-    anchor.dataset.mood = 'quiet';
-    anchor.dataset.ai = 'off';
-    anchor.classList.remove('is-speaking');
-    crossfadeFrame(frameSrc);
+  function applyTimelineSegment(index){
+    if(index < 0 || index >= scriptTimeline.length || index === currentSegmentIndex) return;
+    currentSegmentIndex = index;
+    const seg = scriptTimeline[index];
+    anchor.dataset.mood = seg.mood;
+    anchor.dataset.ai = seg.ai ? 'on' : 'off';
+    playGroup(seg.group, seg.fps);
   }
 
   function startQuietLife(){
     clearTimeout(quietTimer);
-    setQuietPose(quietFrames[0]);
-    const cycle = () => {
+    stopGroupPlayback();
+    anchor.classList.remove('is-speaking');
+    anchor.dataset.mood = 'quiet';
+    anchor.dataset.ai = 'off';
+    crossfadeFrame(groups.calm[0]);
+
+    const idleCycle = () => {
       if(!placed || (!narration.paused && !narration.ended)) return;
       quietTimer = setTimeout(() => {
-        setQuietPose(quietFrames[1]);
+        crossfadeFrame(groups.calm[1]);
         quietTimer = setTimeout(() => {
-          setQuietPose(quietFrames[0]);
-          quietTimer = setTimeout(cycle, 7800);
-        }, 1350);
-      }, 6200);
+          crossfadeFrame(groups.calm[0]);
+          quietTimer = setTimeout(() => {
+            crossfadeFrame(groups.calm[2]);
+            quietTimer = setTimeout(() => {
+              crossfadeFrame(groups.calm[0]);
+              quietTimer = setTimeout(idleCycle, 7200);
+            }, 1000);
+          }, 5800);
+        }, 900);
+      }, 5200);
     };
-    cycle();
+    idleCycle();
   }
 
   function syncNarration(){
     const t = narration.currentTime || 0;
-    const idx = segments.findIndex(s => t >= s.start && t < s.end);
+    const idx = scriptTimeline.findIndex(s => t >= s.start && t < s.end);
     if(idx >= 0){
       anchor.classList.add('is-speaking');
-      applySegment(idx);
+      applyTimelineSegment(idx);
     } else {
       anchor.classList.remove('is-speaking');
     }
@@ -136,6 +155,7 @@
   async function playNarration(fromStart = false){
     if(!placed) return;
     clearTimeout(quietTimer);
+    stopGroupPlayback();
     try{
       if(fromStart){ narration.currentTime = 0; currentSegmentIndex = -1; }
       narration.volume = 1;
@@ -146,7 +166,7 @@
     }
   }
 
-  async function placeMascot(x, y){
+  async function placeMascot(x,y){
     if(placed) return;
     placed = true;
     guide.classList.add('is-hidden');
@@ -154,7 +174,7 @@
     anchor.classList.remove('is-hidden');
     anchor.classList.add('is-placed');
     anchor.style.setProperty('--scale', scale.toFixed(2));
-    crossfadeFrame(frame('frame_step4_3d.png'));
+    crossfadeFrame(groups.calm[0]);
     await playNarration(true);
   }
 
@@ -166,7 +186,7 @@
     return { dx:(cw-drawW)/2, dy:(ch-drawH)/2, drawW, drawH, cw, ch };
   }
 
-  function finaliseCaptureWithLogo(ctx, cw, ch, onDone){
+  function finaliseCaptureWithLogo(ctx, cw, ch){
     const logo = new Image();
     logo.onload = () => {
       const pad = 16;
@@ -174,21 +194,20 @@
       const ratio = logo.height / logo.width;
       const targetH = targetW * ratio;
       ctx.globalAlpha = .92;
-      ctx.drawImage(logo, pad, pad, targetW, targetH); // top-left as requested
+      ctx.drawImage(logo, pad, pad, targetW, targetH);
       ctx.globalAlpha = 1;
       captureCanvas.toBlob(blob => {
         if(!blob){ showToast('Fotoğraf oluşturulamadı'); return; }
         if(capturedObjectUrl) URL.revokeObjectURL(capturedObjectUrl);
         capturedBlob = blob;
         capturedObjectUrl = URL.createObjectURL(blob);
-        capturedDataUrl = captureCanvas.toDataURL('image/png');
         capturedFileName = `kaplanlar-ar-${Date.now()}.png`;
         photoPreviewImage.src = capturedObjectUrl;
         photoPreview.classList.remove('is-hidden');
         const file = new File([blob], capturedFileName, { type:'image/png' });
         const canShareFile = !!(navigator.share && navigator.canShare && navigator.canShare({ files:[file] }));
         sharePhotoBtn.classList.toggle('is-hidden', !canShareFile);
-        onDone && onDone();
+        if(!canShareFile) showToast('Bu cihazda paylaşım desteklenmiyor');
       }, 'image/png', 1);
     };
     logo.onerror = () => {
@@ -197,14 +216,12 @@
         if(capturedObjectUrl) URL.revokeObjectURL(capturedObjectUrl);
         capturedBlob = blob;
         capturedObjectUrl = URL.createObjectURL(blob);
-        capturedDataUrl = captureCanvas.toDataURL('image/png');
         capturedFileName = `kaplanlar-ar-${Date.now()}.png`;
         photoPreviewImage.src = capturedObjectUrl;
         photoPreview.classList.remove('is-hidden');
         const file = new File([blob], capturedFileName, { type:'image/png' });
         const canShareFile = !!(navigator.share && navigator.canShare && navigator.canShare({ files:[file] }));
         sharePhotoBtn.classList.toggle('is-hidden', !canShareFile);
-        onDone && onDone();
       }, 'image/png', 1);
     };
     logo.src = 'assets/kaplanlar_logo.png';
@@ -216,7 +233,6 @@
     captureCanvas.width = cw;
     captureCanvas.height = ch;
     const ctx = captureCanvas.getContext('2d');
-
     ctx.drawImage(video, dx, dy, drawW, drawH);
 
     const img = visibleLayer();
@@ -235,47 +251,8 @@
     ctx.ellipse(anchorRect.left + anchorRect.width/2, anchorRect.top + anchorRect.height*0.82, anchorRect.width*0.22, anchorRect.height*0.03, 0, 0, Math.PI*2);
     ctx.stroke();
 
-    finaliseCaptureWithLogo(ctx, cw, ch, () => showToast('Fotoğraf hazır'));
-  }
-
-  async function downloadCapturedPhoto(){
-    if(!capturedBlob || !capturedObjectUrl){ showToast('Önce fotoğraf çekin'); return; }
-    try {
-      if (window.showSaveFilePicker) {
-        const handle = await window.showSaveFilePicker({
-          suggestedName: capturedFileName,
-          types: [{ description: 'PNG Image', accept: { 'image/png': ['.png'] } }]
-        });
-        const writable = await handle.createWritable();
-        await writable.write(capturedBlob);
-        await writable.close();
-        showToast('Fotoğraf kaydedildi');
-        return;
-      }
-    } catch (err) {
-      if(err && err.name !== 'AbortError') console.log(err);
-    }
-
-    // Standard explicit download
-    const link = document.createElement('a');
-    link.href = capturedObjectUrl;
-    link.download = capturedFileName || `kaplanlar-ar-${Date.now()}.png`;
-    link.rel = 'noopener';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    // Mobile fallback: open image directly so user can long-press/save if the browser blocks download.
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if(isMobile){
-      setTimeout(() => {
-        try { window.open(capturedDataUrl || capturedObjectUrl, '_blank'); } catch(e) {}
-      }, 180);
-      showToast('Görsel açıldı, gerekirse uzun basarak kaydedin');
-    } else {
-      showToast('İndirme başlatıldı');
-    }
+    finaliseCaptureWithLogo(ctx, cw, ch);
+    showToast('Fotoğraf hazır');
   }
 
   async function shareCapturedPhoto(){
@@ -304,7 +281,6 @@
     if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin');
   });
   photoBtn.addEventListener('click', capturePhoto);
-  downloadPhotoBtn.addEventListener('click', downloadCapturedPhoto);
   sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
   closePreviewBtn.addEventListener('click', closePhotoPreview);
   photoPreview.addEventListener('click', e => { if(e.target === photoPreview) closePhotoPreview(); });

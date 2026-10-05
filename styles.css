@@ -166,3 +166,22 @@ img{display:block;max-width:100%}
   .mascot-layer{width:min(84vw,470px)}
   .voice-orb{right:15%;top:22%;width:78px;height:78px}
 }
+
+/* V23 share only */
+.photo-preview-actions{grid-template-columns:1fr auto !important}
+@media(max-width:640px){.photo-preview-actions{grid-template-columns:1fr !important}}
+
+
+/* V24 frame-group structure */
+.photo-preview-actions{grid-template-columns:1fr auto !important}
+.preview-secondary{background:linear-gradient(180deg,#df1735,#b90d28);color:#fff;border-color:#ef3651 !important;font-weight:700}
+.ar-anchor{--scale:1.16;width:min(94vw,650px);height:min(94vw,650px)}
+.mascot-layer{width:clamp(360px,72vw,520px)}
+.ar-anchor[data-mood="curious"] .mascot-layer.is-active,
+.ar-anchor[data-mood="warm"] .mascot-layer.is-active,
+.ar-anchor[data-mood="future"] .mascot-layer.is-active,
+.ar-anchor[data-mood="invite"] .mascot-layer.is-active,
+.ar-anchor[data-mood="ai"] .mascot-layer.is-active,
+.ar-anchor[data-mood="energy"] .mascot-layer.is-active{animation:subtleTalk 3.5s ease-in-out infinite alternate}
+.ar-anchor[data-mood="quiet"] .mascot-layer.is-active{animation:none}
+@media(max-width:640px){.photo-preview-actions{grid-template-columns:1fr !important}}
