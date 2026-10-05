@@ -26,31 +26,15 @@
           <span class="enterprise-label">EXECUTIVE AR EXPERIENCE</span>
         </header>
 
-        <div class="intro-content">
-          <div class="intro-copy">
-            <p class="eyebrow">YAPAY ZEKÂ LANSMAN DENEYİMİ</p>
-            <h1>Kurumsal ve etkileyici<br><strong>sesli WebAR sahnesi</strong></h1>
-            <p class="lede">
-              Kamera açıldığında maskotu zemine yerleştirin. Kurumsal seslendirme başlayacak,
-              maskot metinle senkron şekilde sahnede konuşuyormuş gibi davranacaktır.
-            </p>
-            <div class="intro-actions">
-              <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
-              <div class="intro-meta">
-                <span>Kamera erişimi gerekir</span>
-                <span>Sesli anlatım entegre</span>
-              </div>
-            </div>
+        <div class="intro-content intro-content-minimal">
+          <div class="intro-copy intro-copy-minimal">
+            <p class="eyebrow">YAPAY ZEKÂ LANSMANI</p>
+            <h1>Kaplanlar<br><strong>Dijital Dönüşüm Yolculuğu</strong></h1>
+            <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
           </div>
-
-          <div class="intro-visual">
-            <div class="visual-frame"></div>
+          <div class="intro-visual intro-visual-minimal">
             <div class="visual-glow"></div>
             <img src="assets/mascot_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
-            <div class="visual-caption">
-              <span>AI LAUNCH SEQUENCE</span>
-              <b>Üst yönetime uygun premium artırılmış gerçeklik akışı</b>
-            </div>
           </div>
         </div>
       </div>
@@ -99,7 +83,8 @@
             <span></span><span></span><span></span><span></span><span></span>
           </div>
           <div id="mascotFrame" class="mascot-frame">
-            <img id="mascot" src="assets/mascot_idle.png" alt="Kaplanlar maskotu" draggable="false" />
+            <img id="mascotA" class="mascot-layer is-active" src="assets/mascot_idle.png" alt="Kaplanlar maskotu" draggable="false" />
+            <img id="mascotB" class="mascot-layer" src="assets/mascot_idle.png" alt="" draggable="false" />
           </div>
         </div>
       </div>
