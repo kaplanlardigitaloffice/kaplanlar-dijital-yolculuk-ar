@@ -10,21 +10,22 @@
   const anchor = $('#arAnchor');
   const mascot = $('#mascot');
   const journeyBtn = $('#journeyBtn');
-  const panel = $('#journeyPanel');
-  const closePanel = $('#closePanel');
+  const passwordPanel = $('#passwordPanel');
+  const closePassword = $('#closePassword');
+  const passwordForm = $('#passwordForm');
+  const passwordInput = $('#passwordInput');
+  const passwordError = $('#passwordError');
+  const videoStage = $('#videoStage');
+  const journeyVideo = $('#journeyVideo');
+  const closeVideo = $('#closeVideo');
   const errorBox = $('#errorBox');
 
   const walkFrames = [1,2,3,4,5,6].map(n => `assets/mascot_${n}.png`);
   const waveFrame = 'assets/mascot_7.png';
-  let stream = null;
-  let facingMode = 'environment';
-  let placed = false;
-  let frameIndex = 0;
-  let walkTimer = null;
-  let animationSteps = 0;
-  let scale = 1;
-  let drag = null;
-  let pinchDistance = null;
+  const ACCESS_CODE = 'KAPLAN2026';
+  let stream = null, facingMode = 'environment', placed = false;
+  let frameIndex = 0, walkTimer = null, waveTimer = null, animationSteps = 0;
+  let scale = 1, drag = null, pinchDistance = null;
 
   function preload() {
     [...walkFrames, waveFrame].forEach(src => { const i = new Image(); i.src = src; });
@@ -75,21 +76,20 @@
     guide.classList.add('is-hidden');
     setAnchorPosition(x, y);
     anchor.classList.remove('is-hidden');
+    anchor.classList.add('entering','walking');
     scale = 0.82;
     anchor.style.setProperty('--scale', scale);
     animateEntrance();
   }
 
   arView.addEventListener('click', e => {
-    if (e.target.closest('button') || e.target.closest('.journey-panel')) return;
+    if (e.target.closest('button') || e.target.closest('.password-panel') || e.target.closest('.video-stage')) return;
     if (!placed) placeMascot(e.clientX, e.clientY - 35);
   });
 
   function animateEntrance() {
-    clearInterval(walkTimer);
-    frameIndex = 0;
-    animationSteps = 0;
-    mascot.src = walkFrames[0];
+    clearInterval(walkTimer); clearInterval(waveTimer);
+    frameIndex = 0; animationSteps = 0; mascot.src = walkFrames[0];
     walkTimer = setInterval(() => {
       frameIndex = (frameIndex + 1) % walkFrames.length;
       mascot.src = walkFrames[frameIndex];
@@ -97,35 +97,67 @@
       if (animationSteps >= 18) {
         clearInterval(walkTimer);
         setTimeout(() => {
-          mascot.src = waveFrame;
+          anchor.classList.remove('walking','entering');
+          anchor.classList.add('waving');
+          startWaveLoop();
           journeyBtn.classList.remove('is-hidden');
-        }, 160);
+        }, 120);
       }
     }, 145);
   }
 
+  function startWaveLoop(){
+    let toggle = false;
+    mascot.src = waveFrame;
+    clearInterval(waveTimer);
+    waveTimer = setInterval(() => {
+      toggle = !toggle;
+      mascot.src = toggle ? waveFrame : walkFrames[5];
+    }, 520);
+  }
+
   function resetScene() {
     placed = false;
-    clearInterval(walkTimer);
+    clearInterval(walkTimer); clearInterval(waveTimer);
+    anchor.classList.remove('entering','walking','waving');
     mascot.src = walkFrames[0];
-    anchor.classList.add('is-hidden');
-    guide.classList.remove('is-hidden');
-    journeyBtn.classList.add('is-hidden');
-    panel.classList.add('is-hidden');
-    scale = 1;
-    anchor.style.setProperty('--scale', scale);
-    anchor.style.left = '50%';
-    anchor.style.top = '54%';
+    anchor.classList.add('is-hidden'); guide.classList.remove('is-hidden'); journeyBtn.classList.add('is-hidden');
+    passwordPanel.classList.add('is-hidden'); videoStage.classList.add('is-hidden');
+    journeyVideo.pause(); journeyVideo.currentTime = 0;
+    passwordInput.value = ''; passwordError.textContent = '';
+    scale = 1; anchor.style.setProperty('--scale', scale); anchor.style.left = '50%'; anchor.style.top = '54%';
   }
   resetBtn.addEventListener('click', resetScene);
 
   journeyBtn.addEventListener('click', e => {
     e.stopPropagation();
-    panel.classList.remove('is-hidden');
+    passwordPanel.classList.remove('is-hidden');
+    setTimeout(() => passwordInput.focus(), 50);
   });
-  closePanel.addEventListener('click', () => panel.classList.add('is-hidden'));
+  closePassword.addEventListener('click', () => {
+    passwordPanel.classList.add('is-hidden'); passwordError.textContent = ''; passwordInput.value = '';
+  });
 
-  // Drag anchor
+  passwordForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const code = passwordInput.value.trim().toUpperCase();
+    if (code !== ACCESS_CODE) {
+      passwordError.textContent = 'Şifre hatalı. Lütfen tekrar deneyin.';
+      passwordInput.select();
+      return;
+    }
+    passwordError.textContent = '';
+    passwordPanel.classList.add('is-hidden');
+    videoStage.classList.remove('is-hidden');
+    try { await journeyVideo.play(); } catch (_) {}
+  });
+
+  closeVideo.addEventListener('click', () => {
+    journeyVideo.pause();
+    videoStage.classList.add('is-hidden');
+    passwordInput.value = '';
+  });
+
   anchor.addEventListener('pointerdown', e => {
     if (e.pointerType === 'touch' && e.isPrimary === false) return;
     anchor.setPointerCapture?.(e.pointerId);
@@ -137,13 +169,9 @@
     setAnchorPosition(e.clientX - drag.dx, e.clientY - drag.dy);
   });
   const endDrag = e => { if (drag && drag.id === e.pointerId) drag = null; };
-  anchor.addEventListener('pointerup', endDrag);
-  anchor.addEventListener('pointercancel', endDrag);
+  anchor.addEventListener('pointerup', endDrag); anchor.addEventListener('pointercancel', endDrag);
 
-  // Pinch scaling on the full AR view
-  function distance(t1, t2) {
-    return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-  }
+  function distance(t1, t2) { return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); }
   arView.addEventListener('touchstart', e => {
     if (e.touches.length === 2 && placed) pinchDistance = distance(e.touches[0], e.touches[1]);
   }, {passive:true});
@@ -151,8 +179,7 @@
     if (e.touches.length === 2 && pinchDistance && placed) {
       const d = distance(e.touches[0], e.touches[1]);
       scale = Math.min(1.75, Math.max(.5, scale * (d / pinchDistance)));
-      anchor.style.setProperty('--scale', scale.toFixed(3));
-      pinchDistance = d;
+      anchor.style.setProperty('--scale', scale.toFixed(3)); pinchDistance = d;
     }
   }, {passive:true});
   arView.addEventListener('touchend', () => pinchDistance = null, {passive:true});

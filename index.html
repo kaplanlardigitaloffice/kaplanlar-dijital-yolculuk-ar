@@ -51,11 +51,16 @@
           <b>Dijital Dönüşüm Yolculuğu</b>
         </div>
         <div class="scan-column"></div>
-        <div class="mascot-wrap">
-          <img id="mascot" src="assets/mascot_1.png" alt="Kaplanlar maskotu" draggable="false" />
-          <div class="floor-ring ring-1"></div>
-          <div class="floor-ring ring-2"></div>
-          <div class="floor-ring ring-3"></div>
+        <div class="mascot-stage">
+          <div class="mascot-depth depth-back"></div>
+          <div class="mascot-depth depth-mid"></div>
+          <div class="mascot-wrap">
+            <img id="mascot" src="assets/mascot_1.png" alt="Kaplanlar maskotu" draggable="false" />
+            <div class="floor-shadow"></div>
+            <div class="floor-ring ring-1"></div>
+            <div class="floor-ring ring-2"></div>
+            <div class="floor-ring ring-3"></div>
+          </div>
         </div>
         <div class="data-chip chip-ai">AI</div>
         <div class="data-chip chip-sap">SAP</div>
@@ -63,20 +68,27 @@
         <div class="data-chip chip-data">DATA</div>
       </div>
 
-      <button id="journeyBtn" class="journey-btn is-hidden">YOLCULUĞA BAŞLA</button>
+      <button id="journeyBtn" class="journey-btn is-hidden">DİJİTAL YOLCULUĞA BAŞLA</button>
 
-      <div id="journeyPanel" class="journey-panel is-hidden">
-        <button id="closePanel" aria-label="Kapat">×</button>
-        <p class="eyebrow">DİJİTAL ROTA</p>
-        <h2>Geleceğe birlikte ilerliyoruz.</h2>
-        <div class="journey-grid">
-          <div><b>01</b><span>Yapay Zeka</span></div>
-          <div><b>02</b><span>SAP</span></div>
-          <div><b>03</b><span>Otomasyon</span></div>
-          <div><b>04</b><span>Veri</span></div>
-          <div><b>05</b><span>Dijital Fabrika</span></div>
-        </div>
+      <div id="passwordPanel" class="password-panel is-hidden" role="dialog" aria-modal="true" aria-labelledby="passwordTitle">
+        <button id="closePassword" class="panel-close" aria-label="Kapat">×</button>
+        <div class="lock-icon">🔐</div>
+        <p class="eyebrow">ÖZEL ERİŞİM</p>
+        <h2 id="passwordTitle">Dijital Yolculuk</h2>
+        <p>Videoyu görüntülemek için erişim şifresini girin.</p>
+        <form id="passwordForm" novalidate>
+          <label for="passwordInput">Erişim Şifresi</label>
+          <input id="passwordInput" type="password" inputmode="text" autocomplete="off" placeholder="Şifre" aria-describedby="passwordError" />
+          <button type="submit" class="unlock-btn">VİDEOYU AÇ</button>
+          <div id="passwordError" class="password-error" aria-live="polite"></div>
+        </form>
       </div>
+
+      <section id="videoStage" class="video-stage is-hidden" aria-label="Kaplanlar Dijital Dönüşüm Yolculuğu videosu">
+        <div class="video-brand">KAPLANLAR <span>•</span> DİJİTAL DÖNÜŞÜM YOLCULUĞU</div>
+        <video id="journeyVideo" src="assets/dijital-yolculuk.mp4" controls playsinline preload="metadata"></video>
+        <button id="closeVideo" class="video-close">AR'A DÖN</button>
+      </section>
 
       <div id="errorBox" class="error-box is-hidden"></div>
       <div class="hint">Maskotu sürükleyin • İki parmakla boyutlandırın</div>
