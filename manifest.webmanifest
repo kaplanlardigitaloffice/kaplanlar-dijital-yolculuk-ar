@@ -1,0 +1,10 @@
+{
+  "name": "Kaplanlar Dijital Dönüşüm Yolculuğu",
+  "short_name": "Kaplanlar AR",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#b30013",
+  "orientation": "portrait-primary",
+  "icons": []
+}

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#b30013" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Kaplanlar Dijital Dönüşüm Yolculuğu — WebAR</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <section id="intro" class="screen intro">
+      <div class="intro-glow"></div>
+      <img src="assets/mascot_7.png" class="intro-mascot" alt="Kaplanlar maskotu" />
+      <div class="brand-mark" aria-hidden="true"><span></span></div>
+      <div class="intro-copy">
+        <p class="eyebrow">KAPLANLAR</p>
+        <h1>Dijital Dönüşüm<br><strong>Yolculuğu</strong></h1>
+        <p class="lede">QR deneyimini başlat, kameranı gerçek dünyaya çevir ve dijital maskotla yolculuğa katıl.</p>
+      </div>
+      <button id="startBtn" class="primary-btn">AR DENEYİMİNİ BAŞLAT</button>
+      <p class="permission-note">Devam ettiğinizde yalnızca AR deneyimi için kamera erişimi istenir.</p>
+    </section>
+
+    <section id="arView" class="screen ar-view is-hidden">
+      <video id="camera" autoplay muted playsinline></video>
+      <div class="vignette"></div>
+
+      <header class="topbar">
+        <div class="mini-brand">
+          <div class="brand-mark small"><span></span></div>
+          <div><b>Kaplanlar</b><small>WebAR</small></div>
+        </div>
+        <div class="top-actions">
+          <button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button>
+          <button id="resetBtn" class="icon-btn" aria-label="Sahneyi sıfırla">⌂</button>
+        </div>
+      </header>
+
+      <div id="placementGuide" class="placement-guide">
+        <div class="reticle"><span></span></div>
+        <p>Zemine veya masaya dokun</p>
+      </div>
+
+      <div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik maskotu">
+        <div class="holo-title">
+          <span>KAPLANLAR</span>
+          <b>Dijital Dönüşüm Yolculuğu</b>
+        </div>
+        <div class="scan-column"></div>
+        <div class="mascot-wrap">
+          <img id="mascot" src="assets/mascot_1.png" alt="Kaplanlar maskotu" draggable="false" />
+          <div class="floor-ring ring-1"></div>
+          <div class="floor-ring ring-2"></div>
+          <div class="floor-ring ring-3"></div>
+        </div>
+        <div class="data-chip chip-ai">AI</div>
+        <div class="data-chip chip-sap">SAP</div>
+        <div class="data-chip chip-rpa">RPA</div>
+        <div class="data-chip chip-data">DATA</div>
+      </div>
+
+      <button id="journeyBtn" class="journey-btn is-hidden">YOLCULUĞA BAŞLA</button>
+
+      <div id="journeyPanel" class="journey-panel is-hidden">
+        <button id="closePanel" aria-label="Kapat">×</button>
+        <p class="eyebrow">DİJİTAL ROTA</p>
+        <h2>Geleceğe birlikte ilerliyoruz.</h2>
+        <div class="journey-grid">
+          <div><b>01</b><span>Yapay Zeka</span></div>
+          <div><b>02</b><span>SAP</span></div>
+          <div><b>03</b><span>Otomasyon</span></div>
+          <div><b>04</b><span>Veri</span></div>
+          <div><b>05</b><span>Dijital Fabrika</span></div>
+        </div>
+      </div>
+
+      <div id="errorBox" class="error-box is-hidden"></div>
+      <div class="hint">Maskotu sürükleyin • İki parmakla boyutlandırın</div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
