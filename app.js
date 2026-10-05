@@ -1,5 +1,7 @@
 (() => {
   const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
   const intro = $('#intro');
   const arView = $('#arView');
   const video = $('#camera');
@@ -20,7 +22,11 @@
   const closeVideo = $('#closeVideo');
   const errorBox = $('#errorBox');
 
-  const walkFrames = [1,2,3,4,5,6].map(n => `assets/mascot_${n}.png`);
+  const walkFrames = [1, 2, 3, 4].map(n => `assets/mascot_${n}.png`);
+  const focusLeftFrame = 'assets/mascot_3.png';
+  const focusRightFrame = 'assets/mascot_4.png';
+  const turnFrontFrame = 'assets/mascot_5.png';
+  const idleFrame = 'assets/mascot_6.png';
   const waveFrame = 'assets/mascot_7.png';
   const ACCESS_CODE = 'KAPLAN2026';
 
@@ -31,16 +37,23 @@
   let walkTimer = null;
   let motionTimer = null;
   let motionLoopTimer = null;
-  let animationSteps = 0;
+  let activeSequence = null;
   let scale = 1;
   let drag = null;
   let pinchDistance = null;
-  let chipIndex = 0;
 
-  const chips = () => Array.from(document.querySelectorAll('.data-chip'));
+  const chipMap = {
+    process: '.chip-process',
+    tech: '.chip-tech',
+    team: '.chip-team',
+    growth: '.chip-growth'
+  };
 
   function preload() {
-    [...walkFrames, waveFrame].forEach(src => { const i = new Image(); i.src = src; });
+    [...walkFrames, focusLeftFrame, focusRightFrame, turnFrontFrame, idleFrame, waveFrame].forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
   }
   preload();
 
@@ -49,7 +62,11 @@
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: {
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
       });
       video.srcObject = stream;
       await video.play();
@@ -66,6 +83,156 @@
     stream = null;
   }
 
+  function clearMotionTimers() {
+    clearInterval(walkTimer);
+    clearInterval(motionTimer);
+    clearTimeout(motionLoopTimer);
+    walkTimer = null;
+    motionTimer = null;
+    motionLoopTimer = null;
+  }
+
+  function clearChipFocus() {
+    $$('.data-chip').forEach(chip => chip.classList.remove('is-active'));
+  }
+
+  function setAnchorPosition(x, y) {
+    anchor.style.left = `${x}px`;
+    anchor.style.top = `${y}px`;
+  }
+
+  function resetStateClasses() {
+    anchor.classList.remove(
+      'entering', 'walking', 'waving', 'idle', 'focus-left', 'focus-right', 'scan-mode', 'hero', 'portal-active'
+    );
+  }
+
+  function scheduleNext(callback, delay) {
+    motionLoopTimer = setTimeout(callback, delay);
+  }
+
+  function setMotionState(state, chipKey = null) {
+    clearInterval(motionTimer);
+    clearTimeout(motionLoopTimer);
+    resetStateClasses();
+    clearChipFocus();
+
+    if (state === 'wave') {
+      anchor.classList.add('waving');
+      let toggle = false;
+      mascot.src = waveFrame;
+      motionTimer = setInterval(() => {
+        toggle = !toggle;
+        mascot.src = toggle ? waveFrame : turnFrontFrame;
+      }, 460);
+      scheduleNext(() => setMotionState('idle'), 2600);
+      return;
+    }
+
+    if (state === 'idle') {
+      anchor.classList.add('idle');
+      let toggle = false;
+      mascot.src = idleFrame;
+      motionTimer = setInterval(() => {
+        toggle = !toggle;
+        mascot.src = toggle ? idleFrame : turnFrontFrame;
+      }, 1150);
+      scheduleNext(() => runSequence(), 1800);
+      return;
+    }
+
+    if (state === 'focus' && chipKey) {
+      const chip = $(chipMap[chipKey]);
+      const side = chip?.dataset.focus || 'left';
+      if (chip) chip.classList.add('is-active');
+      anchor.classList.add(side === 'right' ? 'focus-right' : 'focus-left');
+      let toggle = false;
+      mascot.src = side === 'right' ? focusRightFrame : focusLeftFrame;
+      motionTimer = setInterval(() => {
+        toggle = !toggle;
+        mascot.src = toggle
+          ? (side === 'right' ? focusRightFrame : focusLeftFrame)
+          : turnFrontFrame;
+      }, 700);
+      scheduleNext(() => runSequence(), 1750);
+      return;
+    }
+
+    if (state === 'scan') {
+      anchor.classList.add('scan-mode');
+      mascot.src = turnFrontFrame;
+      motionTimer = setInterval(() => {
+        mascot.src = mascot.src.includes('mascot_5') ? idleFrame : turnFrontFrame;
+      }, 760);
+      scheduleNext(() => runSequence(), 2200);
+      return;
+    }
+
+    if (state === 'hero') {
+      anchor.classList.add('hero');
+      let toggle = false;
+      mascot.src = waveFrame;
+      motionTimer = setInterval(() => {
+        toggle = !toggle;
+        mascot.src = toggle ? waveFrame : idleFrame;
+      }, 960);
+      scheduleNext(() => {
+        activeSequence = 0;
+        setMotionState('idle');
+      }, 3000);
+    }
+  }
+
+  const sequence = [
+    ['focus', 'process'],
+    ['focus', 'tech'],
+    ['focus', 'team'],
+    ['focus', 'growth'],
+    ['scan'],
+    ['hero']
+  ];
+
+  function runSequence() {
+    const step = sequence[activeSequence % sequence.length];
+    activeSequence += 1;
+    setMotionState(step[0], step[1]);
+  }
+
+  function animateEntrance() {
+    clearMotionTimers();
+    activeSequence = 0;
+    frameIndex = 0;
+    let steps = 0;
+    mascot.src = walkFrames[0];
+    anchor.classList.add('portal-active', 'entering', 'walking');
+    walkTimer = setInterval(() => {
+      frameIndex = (frameIndex + 1) % walkFrames.length;
+      mascot.src = walkFrames[frameIndex];
+      steps += 1;
+      if (steps >= 22) {
+        clearInterval(walkTimer);
+        walkTimer = null;
+        mascot.src = turnFrontFrame;
+        setTimeout(() => {
+          anchor.classList.remove('walking', 'entering');
+          setMotionState('wave');
+          journeyBtn.classList.remove('is-hidden');
+        }, 180);
+      }
+    }, 130);
+  }
+
+  function placeMascot(x, y) {
+    if (placed) return;
+    placed = true;
+    guide.classList.add('is-hidden');
+    setAnchorPosition(x, y);
+    anchor.classList.remove('is-hidden');
+    scale = 0.82;
+    anchor.style.setProperty('--scale', scale);
+    animateEntrance();
+  }
+
   startBtn.addEventListener('click', async () => {
     intro.classList.add('is-hidden');
     arView.classList.remove('is-hidden');
@@ -77,130 +244,17 @@
     await startCamera();
   });
 
-  function setAnchorPosition(x, y) {
-    anchor.style.left = `${x}px`;
-    anchor.style.top = `${y}px`;
-  }
-
-  function clearMotionTimers() {
-    clearInterval(walkTimer);
-    clearInterval(motionTimer);
-    clearTimeout(motionLoopTimer);
-    walkTimer = null;
-    motionTimer = null;
-    motionLoopTimer = null;
-  }
-
-  function clearChipFocus() {
-    chips().forEach(c => c.classList.remove('is-active'));
-  }
-
-  function setMotionState(state) {
-    clearInterval(motionTimer);
-    clearTimeout(motionLoopTimer);
-    anchor.classList.remove('walking','waving','idle','focus-left','focus-right','scan-mode','hero');
-    clearChipFocus();
-
-    if (state === 'wave') {
-      anchor.classList.add('waving');
-      let toggle = false;
-      mascot.src = waveFrame;
-      motionTimer = setInterval(() => {
-        toggle = !toggle;
-        mascot.src = toggle ? waveFrame : walkFrames[5];
-      }, 500);
-      motionLoopTimer = setTimeout(() => setMotionState('idle'), 3300);
-      return;
-    }
-
-    if (state === 'idle') {
-      anchor.classList.add('idle');
-      mascot.src = walkFrames[0];
-      let toggle = false;
-      motionTimer = setInterval(() => {
-        toggle = !toggle;
-        mascot.src = toggle ? walkFrames[1] : walkFrames[0];
-      }, 1050);
-      motionLoopTimer = setTimeout(() => setMotionState('focus'), 3300);
-      return;
-    }
-
-    if (state === 'focus') {
-      const all = chips();
-      if (!all.length) return setMotionState('scan');
-      const target = all[chipIndex % all.length];
-      const rect = target.getBoundingClientRect();
-      const arRect = anchor.getBoundingClientRect();
-      const targetIsRight = rect.left > arRect.left + arRect.width/2;
-      anchor.classList.add(targetIsRight ? 'focus-right' : 'focus-left');
-      target.classList.add('is-active');
-      mascot.src = targetIsRight ? walkFrames[2] : walkFrames[3];
-      chipIndex++;
-      motionLoopTimer = setTimeout(() => setMotionState(chipIndex % all.length === 0 ? 'scan' : 'focus'), 2200);
-      return;
-    }
-
-    if (state === 'scan') {
-      anchor.classList.add('scan-mode');
-      mascot.src = walkFrames[4];
-      motionLoopTimer = setTimeout(() => setMotionState('hero'), 2600);
-      return;
-    }
-
-    if (state === 'hero') {
-      anchor.classList.add('hero');
-      mascot.src = waveFrame;
-      let toggle = false;
-      motionTimer = setInterval(() => {
-        toggle = !toggle;
-        mascot.src = toggle ? waveFrame : walkFrames[5];
-      }, 900);
-      motionLoopTimer = setTimeout(() => setMotionState('wave'), 3200);
-    }
-  }
-
-  function placeMascot(x, y) {
-    if (placed) return;
-    placed = true;
-    guide.classList.add('is-hidden');
-    setAnchorPosition(x, y);
-    anchor.classList.remove('is-hidden');
-    anchor.classList.add('entering','walking');
-    scale = 0.82;
-    anchor.style.setProperty('--scale', scale);
-    animateEntrance();
-  }
+  resetBtn.addEventListener('click', resetScene);
 
   arView.addEventListener('click', e => {
     if (e.target.closest('button') || e.target.closest('.password-panel') || e.target.closest('.video-stage')) return;
     if (!placed) placeMascot(e.clientX, e.clientY - 35);
   });
 
-  function animateEntrance() {
-    clearMotionTimers();
-    frameIndex = 0;
-    animationSteps = 0;
-    mascot.src = walkFrames[0];
-    walkTimer = setInterval(() => {
-      frameIndex = (frameIndex + 1) % walkFrames.length;
-      mascot.src = walkFrames[frameIndex];
-      animationSteps++;
-      if (animationSteps >= 18) {
-        clearInterval(walkTimer);
-        walkTimer = null;
-        setTimeout(() => {
-          anchor.classList.remove('walking','entering');
-          setMotionState('wave');
-          journeyBtn.classList.remove('is-hidden');
-        }, 120);
-      }
-    }, 145);
-  }
-
   function resetScene() {
     placed = false;
     clearMotionTimers();
-    anchor.classList.remove('entering','walking','waving','idle','focus-left','focus-right','scan-mode','hero');
+    resetStateClasses();
     clearChipFocus();
     mascot.src = walkFrames[0];
     anchor.classList.add('is-hidden');
@@ -213,12 +267,11 @@
     passwordInput.value = '';
     passwordError.textContent = '';
     scale = 1;
-    chipIndex = 0;
+    activeSequence = 0;
     anchor.style.setProperty('--scale', scale);
     anchor.style.left = '50%';
     anchor.style.top = '54%';
   }
-  resetBtn.addEventListener('click', resetScene);
 
   journeyBtn.addEventListener('click', e => {
     e.stopPropagation();
@@ -256,7 +309,11 @@
     if (e.pointerType === 'touch' && e.isPrimary === false) return;
     anchor.setPointerCapture?.(e.pointerId);
     const rect = anchor.getBoundingClientRect();
-    drag = { dx: e.clientX - (rect.left + rect.width/2), dy: e.clientY - (rect.top + rect.height/2), id: e.pointerId };
+    drag = {
+      dx: e.clientX - (rect.left + rect.width / 2),
+      dy: e.clientY - (rect.top + rect.height / 2),
+      id: e.pointerId
+    };
   });
 
   anchor.addEventListener('pointermove', e => {
@@ -264,14 +321,20 @@
     setAnchorPosition(e.clientX - drag.dx, e.clientY - drag.dy);
   });
 
-  const endDrag = e => { if (drag && drag.id === e.pointerId) drag = null; };
+  const endDrag = e => {
+    if (drag && drag.id === e.pointerId) drag = null;
+  };
   anchor.addEventListener('pointerup', endDrag);
   anchor.addEventListener('pointercancel', endDrag);
 
-  function distance(t1, t2) { return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); }
+  function distance(t1, t2) {
+    return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+  }
+
   arView.addEventListener('touchstart', e => {
     if (e.touches.length === 2 && placed) pinchDistance = distance(e.touches[0], e.touches[1]);
-  }, {passive:true});
+  }, { passive: true });
+
   arView.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinchDistance && placed) {
       const d = distance(e.touches[0], e.touches[1]);
@@ -279,9 +342,12 @@
       anchor.style.setProperty('--scale', scale.toFixed(3));
       pinchDistance = d;
     }
-  }, {passive:true});
-  arView.addEventListener('touchend', () => pinchDistance = null, {passive:true});
+  }, { passive: true });
+
+  arView.addEventListener('touchend', () => {
+    pinchDistance = null;
+  }, { passive: true });
 
   window.addEventListener('beforeunload', stopCamera);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 })();

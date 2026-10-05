@@ -25,3 +25,10 @@ QR ile açılan, uygulama kurulumu gerektirmeyen mobil WebAR deneyimi.
 - Idle nefes hareketi eklendi
 - Kartlara sırayla yönelme animasyonu eklendi
 - Holografik tarama ve hero loop eklendi
+
+
+## V6
+- Başlık daha yukarı taşındı
+- Kartlar uzaklaştırıldı ve açıklama satırları eklendi
+- Daha zengin giriş ve koreografi
+- Gelişmiş tarama ve hero animasyonu
