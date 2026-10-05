@@ -1,7 +1,11 @@
-# Kaplanlar WebAR V15
+# Kaplanlar WebAR V16 — Sesli Lansman Deneyimi
 
 Bu sürümde:
-- maskot artık sürekli hareket etmiyor; doğal duraklamalar eklendi
-- sağa sola bakınma hissi için canlı nesne akışı oluşturuldu
-- uzun idle anları eklendi
-- genel akış: durma → sola bakınma → durma → sağa bakınma → durma → AI sunumu → durma → selamlama → hero pose → durma → sunum pozu → uzun idle
+- Kurumsal ses dosyası entegre edildi (`assets/launch_voice.mp3`)
+- Maskot assetleri yeni kurumsal görsellerle değiştirildi
+- Sesli anlatım ile senkron çalışan sahne akışı eklendi
+- Alt yazı / konuşma paneli ve oynat-durdur kontrolü eklendi
+- GitHub Pages üzerinde doğrudan çalışacak şekilde hazırlandı
+
+## Yayınlama
+Bu klasördeki tüm dosyaları GitHub Pages reposuna yükleyin.

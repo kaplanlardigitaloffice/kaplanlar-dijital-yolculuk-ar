@@ -1,1 +1,129 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" /><meta name="theme-color" content="#0a0c10" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><title>Kaplanlar Dijital Dönüşüm Yolculuğu — Enterprise WebAR</title><link rel="manifest" href="manifest.webmanifest" /><link rel="stylesheet" href="styles.css" /></head><body><main id="app" aria-live="polite"><section id="intro" class="screen intro"><div class="intro-grid"></div><div class="intro-shell"><header class="intro-brandbar"><div class="brand-lockup"><div class="brand-mark" aria-hidden="true"><span></span></div><div><b>KAPLANLAR</b><small>DİJİTAL DÖNÜŞÜM</small></div></div><span class="enterprise-label">ENTERPRISE WEBAR</span></header><div class="intro-content"><div class="intro-copy"><p class="eyebrow">ARTIRILMIŞ GERÇEKLİK DENEYİMİ</p><h1>Dijital Dönüşüm<br><strong>Yolculuğu</strong></h1><p class="lede">Kaplanlar’ın dijital dönüşüm vizyonunu artırılmış gerçeklik katmanında, yeni kurumsal maskot asset seti ile deneyimleyin.</p><button id="startBtn" class="primary-btn">AR DENEYİMİNİ BAŞLAT</button><p class="permission-note">Kamera erişimi yalnızca AR görünümü için kullanılır.</p></div><div class="intro-visual"><div class="visual-frame"></div><div class="visual-grid"></div><img src="assets/mascot_ai_hold.png" class="intro-mascot" alt="Kaplanlar maskotu" /><div class="visual-caption"><span>NEW ENTERPRISE ASSET SET</span><b>Kurumsal AI Lansman Deneyimi</b></div></div></div></div></section><section id="arView" class="screen ar-view is-hidden"><video id="camera" autoplay muted playsinline></video><div class="camera-overlay"></div><header class="topbar"><div class="mini-brand"><div class="brand-mark small"><span></span></div><div><b>KAPLANLAR</b><small>Dijital Dönüşüm Yolculuğu</small></div></div><div class="top-actions"><button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button><button id="resetBtn" class="icon-btn" aria-label="Sahneyi sıfırla">⌂</button></div></header><div id="placementGuide" class="placement-guide"><div class="reticle"><span></span></div><div><b>Sahne yerleşimi</b><small>Zemine veya masaya dokunun</small></div></div><div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik Kaplanlar maskotu"><div class="holo-title"><span>KAPLANLAR</span><b>Dijital Dönüşüm Yolculuğu</b><small>ENTERPRISE AUGMENTED EXPERIENCE</small></div><div class="mascot-stage"><div class="scan-column"></div><div class="floor-grid"></div><div class="floor-line"></div><div id="mascotFrame" class="mascot-frame"><img id="mascot" class="frame-live" src="assets/mascot_idle.png" alt="Kaplanlar maskotu" draggable="false" /></div></div></div><div class="experience-hint"><span>Sürükle</span><i></i><span>İki parmakla ölçekle</span></div><div id="errorBox" class="error-box is-hidden"></div></section></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#070a0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Kaplanlar Dijital Dönüşüm Yolculuğu — Executive WebAR</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <section id="intro" class="screen intro">
+      <div class="intro-grid"></div>
+      <div class="intro-shell">
+        <header class="intro-brandbar">
+          <div class="brand-lockup">
+            <div class="brand-mark" aria-hidden="true"><span></span></div>
+            <div>
+              <b>KAPLANLAR</b>
+              <small>DİJİTAL DÖNÜŞÜM YOLCULUĞU</small>
+            </div>
+          </div>
+          <span class="enterprise-label">EXECUTIVE AR EXPERIENCE</span>
+        </header>
+
+        <div class="intro-content">
+          <div class="intro-copy">
+            <p class="eyebrow">YAPAY ZEKÂ LANSMAN DENEYİMİ</p>
+            <h1>Kurumsal ve etkileyici<br><strong>sesli WebAR sahnesi</strong></h1>
+            <p class="lede">
+              Kamera açıldığında maskotu zemine yerleştirin. Kurumsal seslendirme başlayacak,
+              maskot metinle senkron şekilde sahnede konuşuyormuş gibi davranacaktır.
+            </p>
+            <div class="intro-actions">
+              <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
+              <div class="intro-meta">
+                <span>Kamera erişimi gerekir</span>
+                <span>Sesli anlatım entegre</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="intro-visual">
+            <div class="visual-frame"></div>
+            <div class="visual-glow"></div>
+            <img src="assets/mascot_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
+            <div class="visual-caption">
+              <span>AI LAUNCH SEQUENCE</span>
+              <b>Üst yönetime uygun premium artırılmış gerçeklik akışı</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="arView" class="screen ar-view is-hidden">
+      <video id="camera" autoplay muted playsinline></video>
+      <div class="camera-overlay"></div>
+
+      <header class="topbar">
+        <div class="mini-brand">
+          <div class="brand-mark small"><span></span></div>
+          <div>
+            <b>KAPLANLAR</b>
+            <small>Dijital Dönüşüm Yolculuğu</small>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button id="audioBtn" class="audio-btn" aria-label="Sesli tanıtımı oynat veya duraklat">Tanıtımı Oynat</button>
+          <button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button>
+          <button id="resetBtn" class="icon-btn" aria-label="Sahneyi sıfırla">⌂</button>
+        </div>
+      </header>
+
+      <div id="placementGuide" class="placement-guide">
+        <div class="reticle"><span></span></div>
+        <div>
+          <b>Yerleşim hazır</b>
+          <small>Maskotu yerleştirmek için zemine veya masaya dokunun</small>
+        </div>
+      </div>
+
+      <div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik Kaplanlar maskotu" data-mood="idle">
+        <div class="holo-title">
+          <span>KAPLANLAR</span>
+          <b>Dijital Dönüşüm Yolculuğu</b>
+          <small>AI LANSMAN AR DENEYİMİ</small>
+        </div>
+
+        <div class="mascot-stage">
+          <div class="scan-column"></div>
+          <div class="floor-grid"></div>
+          <div class="floor-ring"></div>
+          <div class="voice-orb"></div>
+          <div class="voice-bars" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div id="mascotFrame" class="mascot-frame">
+            <img id="mascot" src="assets/mascot_idle.png" alt="Kaplanlar maskotu" draggable="false" />
+          </div>
+        </div>
+      </div>
+
+      <section class="caption-panel" id="captionPanel">
+        <div class="caption-header">
+          <div>
+            <span class="caption-eyebrow">SESLİ ANLATIM</span>
+            <b id="captionLabel">Deneyim hazır</b>
+          </div>
+          <span class="caption-status" id="captionStatus">Yerleştirme bekleniyor</span>
+        </div>
+        <p id="captionText" class="caption-text">Maskotu yerleştirin; ardından kurumsal sesli deneyim başlasın.</p>
+        <div class="progress-shell">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </section>
+
+      <div class="experience-hint"><span>Sürükle</span><i></i><span>İki parmakla ölçekle</span></div>
+      <div id="errorBox" class="error-box is-hidden"></div>
+    </section>
+  </main>
+
+  <audio id="narration" preload="auto" src="assets/launch_voice.mp3"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
