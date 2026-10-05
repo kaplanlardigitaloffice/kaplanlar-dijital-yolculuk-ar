@@ -17,3 +17,11 @@ QR ile açılan, uygulama kurulumu gerektirmeyen mobil WebAR deneyimi.
 ## V4
 - Güncellenmiş holografik kart metinleri
 - Düşünme ve hero animasyon döngüsü
+
+
+## V5
+- Düşünme balonu kaldırıldı
+- Kartlar maskottan uzağa taşındı
+- Idle nefes hareketi eklendi
+- Kartlara sırayla yönelme animasyonu eklendi
+- Holografik tarama ve hero loop eklendi

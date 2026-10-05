@@ -9,7 +9,6 @@
   const guide = $('#placementGuide');
   const anchor = $('#arAnchor');
   const mascot = $('#mascot');
-  const thoughtBubble = $('#thoughtBubble');
   const journeyBtn = $('#journeyBtn');
   const passwordPanel = $('#passwordPanel');
   const closePassword = $('#closePassword');
@@ -36,6 +35,9 @@
   let scale = 1;
   let drag = null;
   let pinchDistance = null;
+  let chipIndex = 0;
+
+  const chips = () => Array.from(document.querySelectorAll('.data-chip'));
 
   function preload() {
     [...walkFrames, waveFrame].forEach(src => { const i = new Image(); i.src = src; });
@@ -47,11 +49,7 @@
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
+        video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }
       });
       video.srcObject = stream;
       await video.play();
@@ -93,17 +91,15 @@
     motionLoopTimer = null;
   }
 
-  function hideThoughtBubble() {
-    thoughtBubble.classList.add('is-hidden');
-  }
-
-  function showThoughtBubble() {
-    thoughtBubble.classList.remove('is-hidden');
+  function clearChipFocus() {
+    chips().forEach(c => c.classList.remove('is-active'));
   }
 
   function setMotionState(state) {
-    anchor.classList.remove('walking', 'waving', 'thinking', 'hero');
-    hideThoughtBubble();
+    clearInterval(motionTimer);
+    clearTimeout(motionLoopTimer);
+    anchor.classList.remove('walking','waving','idle','focus-left','focus-right','scan-mode','hero');
+    clearChipFocus();
 
     if (state === 'wave') {
       anchor.classList.add('waving');
@@ -112,32 +108,54 @@
       motionTimer = setInterval(() => {
         toggle = !toggle;
         mascot.src = toggle ? waveFrame : walkFrames[5];
-      }, 520);
-      motionLoopTimer = setTimeout(() => setMotionState('think'), 3800);
+      }, 500);
+      motionLoopTimer = setTimeout(() => setMotionState('idle'), 3300);
       return;
     }
 
-    if (state === 'think') {
-      anchor.classList.add('thinking');
-      showThoughtBubble();
-      let localIndex = 0;
-      const thinkFrames = [walkFrames[0], walkFrames[1], walkFrames[0], waveFrame];
-      mascot.src = thinkFrames[0];
+    if (state === 'idle') {
+      anchor.classList.add('idle');
+      mascot.src = walkFrames[0];
+      let toggle = false;
       motionTimer = setInterval(() => {
-        localIndex = (localIndex + 1) % thinkFrames.length;
-        mascot.src = thinkFrames[localIndex];
-      }, 780);
-      motionLoopTimer = setTimeout(() => setMotionState('hero'), 3200);
+        toggle = !toggle;
+        mascot.src = toggle ? walkFrames[1] : walkFrames[0];
+      }, 1050);
+      motionLoopTimer = setTimeout(() => setMotionState('focus'), 3300);
+      return;
+    }
+
+    if (state === 'focus') {
+      const all = chips();
+      if (!all.length) return setMotionState('scan');
+      const target = all[chipIndex % all.length];
+      const rect = target.getBoundingClientRect();
+      const arRect = anchor.getBoundingClientRect();
+      const targetIsRight = rect.left > arRect.left + arRect.width/2;
+      anchor.classList.add(targetIsRight ? 'focus-right' : 'focus-left');
+      target.classList.add('is-active');
+      mascot.src = targetIsRight ? walkFrames[2] : walkFrames[3];
+      chipIndex++;
+      motionLoopTimer = setTimeout(() => setMotionState(chipIndex % all.length === 0 ? 'scan' : 'focus'), 2200);
+      return;
+    }
+
+    if (state === 'scan') {
+      anchor.classList.add('scan-mode');
+      mascot.src = walkFrames[4];
+      motionLoopTimer = setTimeout(() => setMotionState('hero'), 2600);
       return;
     }
 
     if (state === 'hero') {
       anchor.classList.add('hero');
       mascot.src = waveFrame;
+      let toggle = false;
       motionTimer = setInterval(() => {
-        mascot.src = mascot.src.includes('mascot_7') ? walkFrames[4] : waveFrame;
+        toggle = !toggle;
+        mascot.src = toggle ? waveFrame : walkFrames[5];
       }, 900);
-      motionLoopTimer = setTimeout(() => setMotionState('wave'), 3000);
+      motionLoopTimer = setTimeout(() => setMotionState('wave'), 3200);
     }
   }
 
@@ -147,7 +165,7 @@
     guide.classList.add('is-hidden');
     setAnchorPosition(x, y);
     anchor.classList.remove('is-hidden');
-    anchor.classList.add('entering', 'walking');
+    anchor.classList.add('entering','walking');
     scale = 0.82;
     anchor.style.setProperty('--scale', scale);
     animateEntrance();
@@ -171,7 +189,7 @@
         clearInterval(walkTimer);
         walkTimer = null;
         setTimeout(() => {
-          anchor.classList.remove('walking', 'entering');
+          anchor.classList.remove('walking','entering');
           setMotionState('wave');
           journeyBtn.classList.remove('is-hidden');
         }, 120);
@@ -182,7 +200,8 @@
   function resetScene() {
     placed = false;
     clearMotionTimers();
-    anchor.classList.remove('entering', 'walking', 'waving', 'thinking', 'hero');
+    anchor.classList.remove('entering','walking','waving','idle','focus-left','focus-right','scan-mode','hero');
+    clearChipFocus();
     mascot.src = walkFrames[0];
     anchor.classList.add('is-hidden');
     guide.classList.remove('is-hidden');
@@ -193,8 +212,8 @@
     journeyVideo.currentTime = 0;
     passwordInput.value = '';
     passwordError.textContent = '';
-    hideThoughtBubble();
     scale = 1;
+    chipIndex = 0;
     anchor.style.setProperty('--scale', scale);
     anchor.style.left = '50%';
     anchor.style.top = '54%';
@@ -237,7 +256,7 @@
     if (e.pointerType === 'touch' && e.isPrimary === false) return;
     anchor.setPointerCapture?.(e.pointerId);
     const rect = anchor.getBoundingClientRect();
-    drag = { dx: e.clientX - (rect.left + rect.width / 2), dy: e.clientY - (rect.top + rect.height / 2), id: e.pointerId };
+    drag = { dx: e.clientX - (rect.left + rect.width/2), dy: e.clientY - (rect.top + rect.height/2), id: e.pointerId };
   });
 
   anchor.addEventListener('pointermove', e => {
@@ -245,20 +264,14 @@
     setAnchorPosition(e.clientX - drag.dx, e.clientY - drag.dy);
   });
 
-  const endDrag = e => {
-    if (drag && drag.id === e.pointerId) drag = null;
-  };
+  const endDrag = e => { if (drag && drag.id === e.pointerId) drag = null; };
   anchor.addEventListener('pointerup', endDrag);
   anchor.addEventListener('pointercancel', endDrag);
 
-  function distance(t1, t2) {
-    return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-  }
-
+  function distance(t1, t2) { return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); }
   arView.addEventListener('touchstart', e => {
     if (e.touches.length === 2 && placed) pinchDistance = distance(e.touches[0], e.touches[1]);
-  }, { passive: true });
-
+  }, {passive:true});
   arView.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinchDistance && placed) {
       const d = distance(e.touches[0], e.touches[1]);
@@ -266,14 +279,9 @@
       anchor.style.setProperty('--scale', scale.toFixed(3));
       pinchDistance = d;
     }
-  }, { passive: true });
-
-  arView.addEventListener('touchend', () => {
-    pinchDistance = null;
-  }, { passive: true });
+  }, {passive:true});
+  arView.addEventListener('touchend', () => pinchDistance = null, {passive:true});
 
   window.addEventListener('beforeunload', stopCamera);
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
