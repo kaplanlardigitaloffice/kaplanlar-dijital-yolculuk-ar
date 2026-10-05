@@ -54,6 +54,7 @@
         </div>
         <div class="top-actions">
           <button id="audioBtn" class="audio-btn" aria-label="Sesli tanıtımı oynat veya duraklat">Tanıtımı Oynat</button>
+          <button id="photoBtn" class="icon-btn photo-btn" aria-label="Fotoğraf çek">⌲</button>
           <button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button>
           <button id="resetBtn" class="icon-btn" aria-label="Sahneyi sıfırla">⌂</button>
         </div>
@@ -109,6 +110,7 @@
   </main>
 
   <audio id="narration" preload="auto" src="assets/launch_voice.mp3"></audio>
+  <canvas id="captureCanvas" class="is-hidden"></canvas>
   <script src="app.js"></script>
 </body>
 </html>

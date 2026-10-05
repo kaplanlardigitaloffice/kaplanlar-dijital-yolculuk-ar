@@ -220,3 +220,12 @@ img{max-width:100%;display:block}
   .intro-copy-minimal{padding:42px 22px 30px}
   .intro-visual-minimal{min-height:320px}
 }
+
+
+/* V18 photo capture + tighter sync */
+.photo-btn{font-size:18px;line-height:1}
+.photo-btn.flash{box-shadow:0 0 0 2px rgba(239,54,81,.16), 0 0 18px rgba(239,54,81,.35)}
+.mascot-layer{transition:opacity .95s cubic-bezier(.22,.61,.36,1),transform 1.05s cubic-bezier(.22,.61,.36,1),filter 1.05s ease}
+.ar-anchor.is-speaking .mascot-layer.is-active{animation:talkFlowSoft 2.2s ease-in-out infinite}
+@keyframes talkFlowSoft{0%,100%{transform:translateY(0) scale(1) rotate(0deg)}20%{transform:translateY(-1px) scale(1.003) rotate(-.08deg)}48%{transform:translateY(-3px) scale(1.008) rotate(.14deg)}72%{transform:translateY(-2px) scale(1.004) rotate(-.06deg)}}
+@media(max-width:640px){.photo-btn{width:40px;flex:0 0 40px}}
