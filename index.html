@@ -3,55 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <meta name="theme-color" content="#b30013" />
+  <meta name="theme-color" content="#0a0c10" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Kaplanlar Dijital Dönüşüm Yolculuğu — Premium WebAR</title>
+  <title>Kaplanlar Dijital Dönüşüm Yolculuğu — Enterprise WebAR</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main id="app" aria-live="polite">
     <section id="intro" class="screen intro">
-      <div class="intro-orb orb-1"></div>
-      <div class="intro-orb orb-2"></div>
       <div class="intro-grid"></div>
-      <div class="hero-card glass">
-        <div class="intro-visual">
-          <div class="intro-ring"></div>
-          <img src="assets/mascot_premium_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
-        </div>
-        <div class="hero-copy">
-          <div class="brand-line">
+      <div class="intro-shell">
+        <header class="intro-brandbar">
+          <div class="brand-lockup">
             <div class="brand-mark" aria-hidden="true"><span></span></div>
-            <span>KAPLANLAR DİJİTAL</span>
+            <div>
+              <b>KAPLANLAR</b>
+              <small>DİJİTAL DÖNÜŞÜM</small>
+            </div>
           </div>
-          <p class="eyebrow">PREMIUM WEBAR DENEYİMİ</p>
-          <h1>Dijital Dönüşüm <strong>Yolculuğu</strong></h1>
-          <p class="lede">Kameranı aç, maskotu zemine yerleştir ve premium artırılmış gerçeklik deneyiminde AI, selamlama, kalp ve dönüş animasyonlarını izle.</p>
-          <ul class="hero-points">
-            <li>Gerçek zamanlı kamera görünümü</li>
-            <li>Premium maskot sahnesi</li>
-            <li>Sürükle • ölçekle • yeniden konumlandır</li>
-          </ul>
-          <button id="startBtn" class="primary-btn">AR DENEYİMİNİ BAŞLAT</button>
-          <p class="permission-note">Kamera yalnızca bu deneyim için kullanılır. Video akışı cihazınızda kalır.</p>
+          <span class="enterprise-label">ENTERPRISE WEBAR</span>
+        </header>
+
+        <div class="intro-content">
+          <div class="intro-copy">
+            <p class="eyebrow">ARTIRILMIŞ GERÇEKLİK DENEYİMİ</p>
+            <h1>Dijital Dönüşüm<br><strong>Yolculuğu</strong></h1>
+            <p class="lede">Kaplanlar’ın dijital dönüşüm vizyonunu artırılmış gerçeklik katmanında deneyimleyin.</p>
+            <div class="capability-row">
+              <span>AI</span><span>Süreç</span><span>Teknoloji</span><span>Ölçeklenebilirlik</span>
+            </div>
+            <button id="startBtn" class="primary-btn">AR DENEYİMİNİ BAŞLAT</button>
+            <p class="permission-note">Kamera erişimi yalnızca AR görünümü için kullanılır.</p>
+          </div>
+
+          <div class="intro-visual">
+            <div class="visual-frame"></div>
+            <div class="visual-grid"></div>
+            <img src="assets/mascot_premium_ai.png" class="intro-mascot" alt="Kaplanlar maskotu" />
+            <div class="visual-caption">
+              <span>AI-ENABLED EXPERIENCE</span>
+              <b>Dijital Yetkinlik Katmanı</b>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="arView" class="screen ar-view is-hidden">
       <video id="camera" autoplay muted playsinline></video>
-      <div class="backdrop-gradient"></div>
-      <div class="vignette"></div>
+      <div class="camera-overlay"></div>
 
-      <header class="topbar glass">
+      <header class="topbar">
         <div class="mini-brand">
           <div class="brand-mark small"><span></span></div>
-          <div>
-            <b>Kaplanlar</b>
-            <small>Dijital Dönüşüm Yolculuğu</small>
-          </div>
+          <div><b>KAPLANLAR</b><small>Dijital Dönüşüm Yolculuğu</small></div>
         </div>
         <div class="top-actions">
           <button id="flipBtn" class="icon-btn" aria-label="Kamerayı değiştir">↺</button>
@@ -59,76 +66,40 @@
         </div>
       </header>
 
-      <div id="placementGuide" class="placement-guide glass">
+      <div id="placementGuide" class="placement-guide">
         <div class="reticle"><span></span></div>
-        <p>Zemine veya masaya dokunarak maskotu yerleştir</p>
+        <div><b>Sahne yerleşimi</b><small>Zemine veya masaya dokunun</small></div>
       </div>
 
       <div id="arAnchor" class="ar-anchor is-hidden" role="img" aria-label="Artırılmış gerçeklik Kaplanlar maskotu">
-        <div class="holo-title glass">
+        <div class="holo-title">
           <span>KAPLANLAR</span>
           <b>Dijital Dönüşüm Yolculuğu</b>
-          <small>Premium Artırılmış Gerçeklik Katmanı</small>
+          <small>ENTERPRISE AUGMENTED EXPERIENCE</small>
         </div>
 
-        <div id="aiFocusBadge" class="ai-focus-badge glass is-hidden" aria-hidden="true">
-          <span class="badge-kicker">YAPAY ZEKA</span>
-          <strong>Soyut Zeka Çekirdeği</strong>
-          <small>Akıllı çözümler, otomasyon ve dijital karar desteği</small>
+        <div id="aiFocusBadge" class="ai-focus-badge is-hidden" aria-hidden="true">
+          <span>YAPAY ZEKA</span>
+          <b>Soyut Zeka Katmanı</b>
+          <small>Akıllı karar desteği • otomasyon • dijital yetkinlik</small>
         </div>
 
-        <div class="data-chip chip-process glass" data-key="process">
-          <span class="chip-icon">↗</span>
-          <div class="chip-copy">
-            <strong>DAHA VERİMLİ</strong>
-            <em>SÜREÇLER</em>
-            <small>Hız, görünürlük ve verimlilik</small>
-          </div>
-        </div>
-        <div class="data-chip chip-tech glass" data-key="tech">
-          <span class="chip-icon">✦</span>
-          <div class="chip-copy">
-            <strong>YENİLİKÇİ</strong>
-            <em>TEKNOLOJİLER</em>
-            <small>AI, otomasyon ve akıllı çözümler</small>
-          </div>
-        </div>
-        <div class="data-chip chip-team glass" data-key="team">
-          <span class="chip-icon">◎</span>
-          <div class="chip-copy">
-            <strong>DAHA GÜÇLÜ</strong>
-            <em>EKİPLER</em>
-            <small>İş birliği ve kullanıcı deneyimi</small>
-          </div>
-        </div>
-        <div class="data-chip chip-growth glass" data-key="growth">
-          <span class="chip-icon">⚙</span>
-          <div class="chip-copy">
-            <strong>SÜRDÜRÜLEBİLİR</strong>
-            <em>BÜYÜME</em>
-            <small>Ölçeklenebilir dijital değer</small>
-          </div>
-        </div>
+        <div class="metric-card card-process" data-key="process"><span>01</span><div><b>DAHA VERİMLİ SÜREÇLER</b><small>Hız • görünürlük • verimlilik</small></div></div>
+        <div class="metric-card card-tech" data-key="tech"><span>02</span><div><b>YENİLİKÇİ TEKNOLOJİLER</b><small>AI • otomasyon • akıllı çözümler</small></div></div>
+        <div class="metric-card card-team" data-key="team"><span>03</span><div><b>DAHA GÜÇLÜ EKİPLER</b><small>İş birliği • çeviklik • deneyim</small></div></div>
+        <div class="metric-card card-growth" data-key="growth"><span>04</span><div><b>SÜRDÜRÜLEBİLİR BÜYÜME</b><small>Ölçeklenebilir • kalıcı dijital değer</small></div></div>
 
         <div class="mascot-stage">
-          <div class="ambient ambient-1"></div>
-          <div class="ambient ambient-2"></div>
           <div class="scan-column"></div>
-          <div class="floor-glow"></div>
-          <div class="floor-ring ring-1"></div>
-          <div class="floor-ring ring-2"></div>
-          <div class="floor-ring ring-3"></div>
+          <div class="floor-grid"></div>
+          <div class="floor-line"></div>
           <div id="mascotFrame" class="mascot-frame">
             <img id="mascot" src="assets/mascot_premium_idle.png" alt="Kaplanlar maskotu" draggable="false" />
           </div>
         </div>
       </div>
 
-      <div class="experience-hint glass">
-        <span>Maskotu sürükleyin</span>
-        <i></i>
-        <span>İki parmakla boyutlandırın</span>
-      </div>
+      <div class="experience-hint"><span>Sürükle</span><i></i><span>İki parmakla ölçekle</span></div>
       <div id="errorBox" class="error-box is-hidden"></div>
     </section>
   </main>

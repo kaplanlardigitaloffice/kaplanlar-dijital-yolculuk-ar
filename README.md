@@ -1,18 +1,9 @@
-# Kaplanlar WebAR V9 – Premium Asset Sürümü
+# Kaplanlar WebAR V11 Enterprise
 
-Bu sürümde:
-- video bölümü kaldırıldı
-- yeni premium maskot assetleri eklendi
-- maskot akışı: selamlama -> AI gösterimi -> dönüş -> tekrar
-- daha premium cam panel / holografik arayüz tasarımı uygulandı
-- sürükleme ve pinch-zoom desteği korundu
-
-## Yükleme
-1. GitHub repository içinde eski dosyaların üzerine bu sürümün dosyalarını yükleyin.
-2. Commit changes yapın.
-3. GitHub Pages birkaç dakika içinde güncellenecektir.
-
-## Not
-Tarayıcı önbelleği eski sürümü gösterirse telefonda sayfayı sert yenileyin veya farklı sekmede açın.
-
-- Kalp hareketi kurumsal kimlik gereği kaldırıldı.
+Bu sürüm daha profesyonel ve kurumsal bir görsel dil kullanır.
+- Çocuksu animasyonlar kaldırıldı
+- Kalp ve abartılı selamlama yok
+- Kurumsal sunum akışı: nötr duruş -> AI sunumu -> kontrollü dönüş -> nötr duruş
+- Siyah/grafit kurumsal arayüz ve ölçülü kırmızı vurgu
+- Video bölümü yok
+- Kamera, sürükleme ve pinch-zoom korunur
