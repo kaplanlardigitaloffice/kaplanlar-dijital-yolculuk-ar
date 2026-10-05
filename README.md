@@ -1,7 +1,7 @@
-# Kaplanlar WebAR V14
+# Kaplanlar WebAR V15
 
 Bu sürümde:
-- hareket geçişleri yumuşatıldı
-- maskot etrafındaki tüm kartlar ve AI bilgi rozeti kaldırıldı
-- sadece üstte “Kaplanlar Dijital Dönüşüm Yolculuğu” başlığı bırakıldı
-- asset geçişlerine fade + yumuşak hareket hissi eklendi
+- maskot artık sürekli hareket etmiyor; doğal duraklamalar eklendi
+- sağa sola bakınma hissi için canlı nesne akışı oluşturuldu
+- uzun idle anları eklendi
+- genel akış: durma → sola bakınma → durma → sağa bakınma → durma → AI sunumu → durma → selamlama → hero pose → durma → sunum pozu → uzun idle
