@@ -9,6 +9,7 @@
   const guide = $('#placementGuide');
   const anchor = $('#arAnchor');
   const mascot = $('#mascot');
+  const thoughtBubble = $('#thoughtBubble');
   const journeyBtn = $('#journeyBtn');
   const passwordPanel = $('#passwordPanel');
   const closePassword = $('#closePassword');
@@ -23,9 +24,18 @@
   const walkFrames = [1,2,3,4,5,6].map(n => `assets/mascot_${n}.png`);
   const waveFrame = 'assets/mascot_7.png';
   const ACCESS_CODE = 'KAPLAN2026';
-  let stream = null, facingMode = 'environment', placed = false;
-  let frameIndex = 0, walkTimer = null, waveTimer = null, animationSteps = 0;
-  let scale = 1, drag = null, pinchDistance = null;
+
+  let stream = null;
+  let facingMode = 'environment';
+  let placed = false;
+  let frameIndex = 0;
+  let walkTimer = null;
+  let motionTimer = null;
+  let motionLoopTimer = null;
+  let animationSteps = 0;
+  let scale = 1;
+  let drag = null;
+  let pinchDistance = null;
 
   function preload() {
     [...walkFrames, waveFrame].forEach(src => { const i = new Image(); i.src = src; });
@@ -37,7 +47,11 @@
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: {
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
       });
       video.srcObject = stream;
       await video.play();
@@ -70,13 +84,70 @@
     anchor.style.top = `${y}px`;
   }
 
+  function clearMotionTimers() {
+    clearInterval(walkTimer);
+    clearInterval(motionTimer);
+    clearTimeout(motionLoopTimer);
+    walkTimer = null;
+    motionTimer = null;
+    motionLoopTimer = null;
+  }
+
+  function hideThoughtBubble() {
+    thoughtBubble.classList.add('is-hidden');
+  }
+
+  function showThoughtBubble() {
+    thoughtBubble.classList.remove('is-hidden');
+  }
+
+  function setMotionState(state) {
+    anchor.classList.remove('walking', 'waving', 'thinking', 'hero');
+    hideThoughtBubble();
+
+    if (state === 'wave') {
+      anchor.classList.add('waving');
+      let toggle = false;
+      mascot.src = waveFrame;
+      motionTimer = setInterval(() => {
+        toggle = !toggle;
+        mascot.src = toggle ? waveFrame : walkFrames[5];
+      }, 520);
+      motionLoopTimer = setTimeout(() => setMotionState('think'), 3800);
+      return;
+    }
+
+    if (state === 'think') {
+      anchor.classList.add('thinking');
+      showThoughtBubble();
+      let localIndex = 0;
+      const thinkFrames = [walkFrames[0], walkFrames[1], walkFrames[0], waveFrame];
+      mascot.src = thinkFrames[0];
+      motionTimer = setInterval(() => {
+        localIndex = (localIndex + 1) % thinkFrames.length;
+        mascot.src = thinkFrames[localIndex];
+      }, 780);
+      motionLoopTimer = setTimeout(() => setMotionState('hero'), 3200);
+      return;
+    }
+
+    if (state === 'hero') {
+      anchor.classList.add('hero');
+      mascot.src = waveFrame;
+      motionTimer = setInterval(() => {
+        mascot.src = mascot.src.includes('mascot_7') ? walkFrames[4] : waveFrame;
+      }, 900);
+      motionLoopTimer = setTimeout(() => setMotionState('wave'), 3000);
+    }
+  }
+
   function placeMascot(x, y) {
     if (placed) return;
     placed = true;
     guide.classList.add('is-hidden');
     setAnchorPosition(x, y);
     anchor.classList.remove('is-hidden');
-    anchor.classList.add('entering','walking');
+    anchor.classList.add('entering', 'walking');
     scale = 0.82;
     anchor.style.setProperty('--scale', scale);
     animateEntrance();
@@ -88,44 +159,45 @@
   });
 
   function animateEntrance() {
-    clearInterval(walkTimer); clearInterval(waveTimer);
-    frameIndex = 0; animationSteps = 0; mascot.src = walkFrames[0];
+    clearMotionTimers();
+    frameIndex = 0;
+    animationSteps = 0;
+    mascot.src = walkFrames[0];
     walkTimer = setInterval(() => {
       frameIndex = (frameIndex + 1) % walkFrames.length;
       mascot.src = walkFrames[frameIndex];
       animationSteps++;
       if (animationSteps >= 18) {
         clearInterval(walkTimer);
+        walkTimer = null;
         setTimeout(() => {
-          anchor.classList.remove('walking','entering');
-          anchor.classList.add('waving');
-          startWaveLoop();
+          anchor.classList.remove('walking', 'entering');
+          setMotionState('wave');
           journeyBtn.classList.remove('is-hidden');
         }, 120);
       }
     }, 145);
   }
 
-  function startWaveLoop(){
-    let toggle = false;
-    mascot.src = waveFrame;
-    clearInterval(waveTimer);
-    waveTimer = setInterval(() => {
-      toggle = !toggle;
-      mascot.src = toggle ? waveFrame : walkFrames[5];
-    }, 520);
-  }
-
   function resetScene() {
     placed = false;
-    clearInterval(walkTimer); clearInterval(waveTimer);
-    anchor.classList.remove('entering','walking','waving');
+    clearMotionTimers();
+    anchor.classList.remove('entering', 'walking', 'waving', 'thinking', 'hero');
     mascot.src = walkFrames[0];
-    anchor.classList.add('is-hidden'); guide.classList.remove('is-hidden'); journeyBtn.classList.add('is-hidden');
-    passwordPanel.classList.add('is-hidden'); videoStage.classList.add('is-hidden');
-    journeyVideo.pause(); journeyVideo.currentTime = 0;
-    passwordInput.value = ''; passwordError.textContent = '';
-    scale = 1; anchor.style.setProperty('--scale', scale); anchor.style.left = '50%'; anchor.style.top = '54%';
+    anchor.classList.add('is-hidden');
+    guide.classList.remove('is-hidden');
+    journeyBtn.classList.add('is-hidden');
+    passwordPanel.classList.add('is-hidden');
+    videoStage.classList.add('is-hidden');
+    journeyVideo.pause();
+    journeyVideo.currentTime = 0;
+    passwordInput.value = '';
+    passwordError.textContent = '';
+    hideThoughtBubble();
+    scale = 1;
+    anchor.style.setProperty('--scale', scale);
+    anchor.style.left = '50%';
+    anchor.style.top = '54%';
   }
   resetBtn.addEventListener('click', resetScene);
 
@@ -134,8 +206,11 @@
     passwordPanel.classList.remove('is-hidden');
     setTimeout(() => passwordInput.focus(), 50);
   });
+
   closePassword.addEventListener('click', () => {
-    passwordPanel.classList.add('is-hidden'); passwordError.textContent = ''; passwordInput.value = '';
+    passwordPanel.classList.add('is-hidden');
+    passwordError.textContent = '';
+    passwordInput.value = '';
   });
 
   passwordForm.addEventListener('submit', async e => {
@@ -162,28 +237,43 @@
     if (e.pointerType === 'touch' && e.isPrimary === false) return;
     anchor.setPointerCapture?.(e.pointerId);
     const rect = anchor.getBoundingClientRect();
-    drag = { dx: e.clientX - (rect.left + rect.width/2), dy: e.clientY - (rect.top + rect.height/2), id: e.pointerId };
+    drag = { dx: e.clientX - (rect.left + rect.width / 2), dy: e.clientY - (rect.top + rect.height / 2), id: e.pointerId };
   });
+
   anchor.addEventListener('pointermove', e => {
     if (!drag || drag.id !== e.pointerId) return;
     setAnchorPosition(e.clientX - drag.dx, e.clientY - drag.dy);
   });
-  const endDrag = e => { if (drag && drag.id === e.pointerId) drag = null; };
-  anchor.addEventListener('pointerup', endDrag); anchor.addEventListener('pointercancel', endDrag);
 
-  function distance(t1, t2) { return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY); }
+  const endDrag = e => {
+    if (drag && drag.id === e.pointerId) drag = null;
+  };
+  anchor.addEventListener('pointerup', endDrag);
+  anchor.addEventListener('pointercancel', endDrag);
+
+  function distance(t1, t2) {
+    return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+  }
+
   arView.addEventListener('touchstart', e => {
     if (e.touches.length === 2 && placed) pinchDistance = distance(e.touches[0], e.touches[1]);
-  }, {passive:true});
+  }, { passive: true });
+
   arView.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinchDistance && placed) {
       const d = distance(e.touches[0], e.touches[1]);
       scale = Math.min(1.75, Math.max(.5, scale * (d / pinchDistance)));
-      anchor.style.setProperty('--scale', scale.toFixed(3)); pinchDistance = d;
+      anchor.style.setProperty('--scale', scale.toFixed(3));
+      pinchDistance = d;
     }
-  }, {passive:true});
-  arView.addEventListener('touchend', () => pinchDistance = null, {passive:true});
+  }, { passive: true });
+
+  arView.addEventListener('touchend', () => {
+    pinchDistance = null;
+  }, { passive: true });
 
   window.addEventListener('beforeunload', stopCamera);
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 })();

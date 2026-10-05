@@ -12,3 +12,8 @@ QR ile açılan, uygulama kurulumu gerektirmeyen mobil WebAR deneyimi.
 7. Doğru kod girilince `assets/dijital-yolculuk.mp4` oynatılır
 
 > Not: GitHub Pages statik hosting olduğu için tarayıcı tarafındaki erişim kodu gerçek güvenlik sağlamaz; yalnızca kullanıcı akışı/görsel kapı görevi görür. Gerçek erişim kontrolü için backend doğrulaması gerekir.
+
+
+## V4
+- Güncellenmiş holografik kart metinleri
+- Düşünme ve hero animasyon döngüsü
