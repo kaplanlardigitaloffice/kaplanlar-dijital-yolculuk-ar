@@ -6,6 +6,8 @@
   const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn');
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
+  const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
+  const downloadPhotoBtn = $('#downloadPhotoBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
 
   const frame = (name) => `assets/${name}`;
   const cues = [
@@ -23,6 +25,7 @@
 
   let stream = null, placed = false, scale = 1.06, drag = null, pinchDistance = null;
   let audioUnlocked = false, activeLayer = 'A', currentCueIndex = -1, currentFrameTimer = null, currentFramePointer = 0, quietTimer = null;
+  let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
 
   function showToast(msg){
     toast.textContent = msg;
@@ -175,43 +178,112 @@
 
   async function capturePhoto(){
     if(!placed){ showToast('Önce maskotu yerleştirin'); return; }
+
     const {dx,dy,drawW,drawH,cw,ch} = fitVideoCrop();
-    captureCanvas.width = cw; captureCanvas.height = ch;
+    captureCanvas.width = cw;
+    captureCanvas.height = ch;
     const ctx = captureCanvas.getContext('2d');
+
     ctx.drawImage(video, dx, dy, drawW, drawH);
 
-    // mascot + floor ring
+    // Mascot + subtle AR floor ring
     const img = visibleLayer();
     const imgRect = img.getBoundingClientRect();
     const anchorRect = anchor.getBoundingClientRect();
+
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,.34)';
     ctx.shadowBlur = 28;
     ctx.drawImage(img, imgRect.left, imgRect.top, imgRect.width, imgRect.height);
     ctx.restore();
+
     ctx.strokeStyle = 'rgba(211,18,47,.85)';
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.ellipse(anchorRect.left + anchorRect.width/2, anchorRect.top + anchorRect.height*0.82, anchorRect.width*0.22, anchorRect.height*0.03, 0, 0, Math.PI*2);
+    ctx.ellipse(
+      anchorRect.left + anchorRect.width/2,
+      anchorRect.top + anchorRect.height*0.82,
+      anchorRect.width*0.22,
+      anchorRect.height*0.03,
+      0, 0, Math.PI*2
+    );
     ctx.stroke();
 
-    // logo in top-right
+    // Add Kaplanlar logo before producing the final file
     const logo = new Image();
     logo.onload = () => {
-      const pad=16;
-      const targetW=Math.min(180, cw*0.28);
-      const ratio=logo.height/logo.width;
-      const targetH=targetW*ratio;
-      ctx.globalAlpha=.9;
+      const pad = 16;
+      const targetW = Math.min(180, cw * 0.28);
+      const ratio = logo.height / logo.width;
+      const targetH = targetW * ratio;
+
+      ctx.globalAlpha = .90;
       ctx.drawImage(logo, cw-targetW-pad, pad, targetW, targetH);
-      ctx.globalAlpha=1;
-      const link=document.createElement('a');
-      link.download=`kaplanlar-ar-${Date.now()}.png`;
-      link.href=captureCanvas.toDataURL('image/png');
-      link.click();
-      showToast('Fotoğraf indirildi');
+      ctx.globalAlpha = 1;
+
+      captureCanvas.toBlob(blob => {
+        if(!blob){
+          showToast('Fotoğraf oluşturulamadı');
+          return;
+        }
+
+        if(capturedObjectUrl) URL.revokeObjectURL(capturedObjectUrl);
+        capturedBlob = blob;
+        capturedObjectUrl = URL.createObjectURL(blob);
+        capturedFileName = `kaplanlar-ar-${Date.now()}.png`;
+
+        photoPreviewImage.src = capturedObjectUrl;
+        photoPreview.classList.remove('is-hidden');
+
+        const file = new File([blob], capturedFileName, {type:'image/png'});
+        const canShareFile = !!(navigator.share && navigator.canShare && navigator.canShare({files:[file]}));
+        sharePhotoBtn.classList.toggle('is-hidden', !canShareFile);
+
+        showToast('Fotoğraf hazır');
+      }, 'image/png', 1);
     };
-    logo.src='assets/kaplanlar_logo.png';
+    logo.onerror = () => showToast('Logo yüklenemedi');
+    logo.src = 'assets/kaplanlar_logo.png';
+  }
+
+  function downloadCapturedPhoto(){
+    if(!capturedBlob || !capturedObjectUrl){
+      showToast('Önce fotoğraf çekin');
+      return;
+    }
+
+    // Explicit user-triggered download: more reliable on mobile browsers.
+    const link = document.createElement('a');
+    link.href = capturedObjectUrl;
+    link.download = capturedFileName || `kaplanlar-ar-${Date.now()}.png`;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Safari/iOS may ignore download= for blob URLs.
+    // Keep the preview open so the image can still be long-pressed / saved.
+    showToast('İndirme başlatıldı');
+  }
+
+  async function shareCapturedPhoto(){
+    if(!capturedBlob) return;
+    const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', {type:'image/png'});
+    try{
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({
+          files:[file],
+          title:'Kaplanlar Dijital Dönüşüm Yolculuğu',
+          text:'Kaplanlar AR deneyimi'
+        });
+      }
+    }catch(err){
+      if(err && err.name !== 'AbortError') showToast('Paylaşım açılamadı');
+    }
+  }
+
+  function closePhotoPreview(){
+    photoPreview.classList.add('is-hidden');
   }
 
   startBtn.addEventListener('click', async()=>{
@@ -223,6 +295,12 @@
 
   replayBtn.addEventListener('click', async()=>{ await unlockAudio(); if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin'); });
   photoBtn.addEventListener('click', capturePhoto);
+  downloadPhotoBtn.addEventListener('click', downloadCapturedPhoto);
+  sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
+  closePreviewBtn.addEventListener('click', closePhotoPreview);
+  photoPreview.addEventListener('click', e => {
+    if(e.target === photoPreview) closePhotoPreview();
+  });
 
   arView.addEventListener('click', async e => {
     if(e.target.closest('.fab-btn') || e.target.closest('.error-box')) return;

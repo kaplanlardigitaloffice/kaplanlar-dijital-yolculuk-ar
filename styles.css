@@ -77,3 +77,63 @@ img{display:block;max-width:100%}
   .fab-group{right:12px;bottom:14px}
   .fab-btn{width:48px;height:48px}
 }
+
+
+/* V21 — reliable photo preview/download flow */
+.photo-preview{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(3,5,8,.78);
+  backdrop-filter:blur(12px);
+}
+.photo-preview-card{
+  width:min(94vw,560px);
+  max-height:92dvh;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.14);
+  background:#0b0f15;
+  box-shadow:0 28px 80px rgba(0,0,0,.55);
+}
+.photo-preview-card img{
+  width:100%;
+  max-height:72dvh;
+  object-fit:contain;
+  background:#05070b;
+}
+.photo-preview-actions{
+  display:grid;
+  grid-template-columns:1.35fr 1fr auto;
+  gap:10px;
+}
+.photo-preview-actions button{
+  min-height:46px;
+  border:1px solid #2b3542;
+  cursor:pointer;
+}
+.preview-primary{
+  background:linear-gradient(180deg,#df1735,#b90d28);
+  color:#fff;
+  border-color:#ef3651 !important;
+  font-weight:700;
+}
+.preview-secondary{
+  background:#141b25;
+  color:#fff;
+}
+.preview-close{
+  background:#0d1219;
+  color:#a9b3c0;
+  padding:0 16px;
+}
+@media(max-width:640px){
+  .photo-preview-card{width:96vw;padding:10px}
+  .photo-preview-actions{grid-template-columns:1fr 1fr}
+  .preview-close{grid-column:1/-1}
+}

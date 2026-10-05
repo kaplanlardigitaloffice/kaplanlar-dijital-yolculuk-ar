@@ -54,6 +54,16 @@
 
       <div id="toast" class="toast is-hidden"></div>
       <div id="errorBox" class="error-box is-hidden"></div>
+      <div id="photoPreview" class="photo-preview is-hidden" role="dialog" aria-modal="true" aria-label="Çekilen fotoğraf">
+        <div class="photo-preview-card">
+          <img id="photoPreviewImage" alt="Çekilen AR fotoğrafı" />
+          <div class="photo-preview-actions">
+            <button id="downloadPhotoBtn" class="preview-primary">Fotoğrafı İndir</button>
+            <button id="sharePhotoBtn" class="preview-secondary">Paylaş</button>
+            <button id="closePreviewBtn" class="preview-close">Kapat</button>
+          </div>
+        </div>
+      </div>
       <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
