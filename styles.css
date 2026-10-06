@@ -1210,3 +1210,171 @@ body.landscape-preferred .placement-guide{
     gap:8px;
   }
 }
+
+
+/* V37 — management-ready final polish */
+
+/* Absolutely no red tint over the video itself. */
+.video-shade{
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,.34) 0%,
+      rgba(0,0,0,.10) 22%,
+      rgba(0,0,0,0) 48%,
+      rgba(0,0,0,.18) 78%,
+      rgba(0,0,0,.46) 100%) !important;
+  transition:opacity .35s ease;
+}
+.video-shade.is-playing{
+  opacity:0 !important;
+}
+
+/* The logo itself is transparent now; remove the white/glass plate behind it. */
+.intro-brand-wrap{
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  box-shadow:none !important;
+}
+.intro-brand-logo{
+  width:min(210px,22vw) !important;
+  min-width:126px;
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,.28));
+}
+
+/* Refine intro ribbon: compact corporate treatment, no oversized 'banner' feel. */
+.intro-ribbon{
+  padding:20px 28px 20px !important;
+  border-radius:20px !important;
+  box-shadow:0 18px 46px rgba(181,13,40,.22), inset 0 1px 0 rgba(255,255,255,.22) !important;
+}
+.intro-ribbon span{
+  font-size:clamp(27px,4.2vw,56px) !important;
+  line-height:.98 !important;
+}
+
+/* AR transition panel — robust layout with no text collision. */
+.enter-ar-panel{
+  width:min(92vw,900px) !important;
+  grid-template-columns:minmax(230px,310px) minmax(0,1fr) !important;
+  min-height:300px !important;
+  align-items:stretch !important;
+  border-radius:28px !important;
+}
+.enter-ar-visual{
+  min-width:0 !important;
+  min-height:300px !important;
+  overflow:hidden !important;
+}
+.enter-ar-mascot{
+  width:min(28vw,270px) !important;
+  max-width:270px !important;
+  max-height:290px !important;
+  object-fit:contain !important;
+}
+.enter-ar-copy{
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  padding:34px 40px 34px 18px !important;
+}
+.enter-ar-copy h2{
+  margin:0 0 12px !important;
+  font-size:clamp(30px,3.6vw,46px) !important;
+  line-height:1.03 !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+}
+.enter-ar-copy p{
+  margin:0 0 22px !important;
+  max-width:500px !important;
+}
+.enter-ar-btn{
+  align-self:flex-start !important;
+  width:auto !important;
+  max-width:100% !important;
+  min-height:54px !important;
+  padding:0 16px 0 20px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  white-space:nowrap !important;
+  line-height:1 !important;
+  overflow:hidden !important;
+}
+.enter-ar-btn > span:first-child{
+  display:block !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+  line-height:1 !important;
+}
+.enter-ar-arrow{
+  flex:0 0 28px !important;
+}
+
+/* Mobile version uses a vertical composition so text can never overlap. */
+@media(max-width:720px){
+  .intro-brand-logo{
+    width:min(160px,38vw) !important;
+  }
+  .intro-ribbon{
+    width:min(92vw,560px) !important;
+    padding:16px 18px !important;
+    border-radius:18px !important;
+  }
+  .intro-ribbon span{
+    font-size:clamp(23px,6.5vw,34px) !important;
+  }
+
+  .enter-ar-panel{
+    width:min(92vw,390px) !important;
+    grid-template-columns:1fr !important;
+    grid-template-rows:150px auto !important;
+    min-height:0 !important;
+    border-radius:24px !important;
+  }
+  .enter-ar-visual{
+    min-height:150px !important;
+    height:150px !important;
+    align-items:flex-end !important;
+  }
+  .enter-ar-mascot{
+    width:158px !important;
+    max-width:158px !important;
+    max-height:158px !important;
+    transform:none !important;
+  }
+  .enter-ar-copy{
+    padding:16px 18px 18px !important;
+    text-align:left !important;
+  }
+  .enter-ar-eyebrow{
+    margin-bottom:7px !important;
+    font-size:9px !important;
+  }
+  .enter-ar-copy h2{
+    font-size:25px !important;
+    line-height:1.04 !important;
+    margin-bottom:12px !important;
+  }
+  .enter-ar-copy p{
+    display:none !important;
+  }
+  .enter-ar-btn{
+    width:100% !important;
+    min-height:50px !important;
+    padding:0 12px 0 15px !important;
+    justify-content:space-between !important;
+    font-size:12px !important;
+    gap:8px !important;
+  }
+  .enter-ar-btn > span:first-child{
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+}

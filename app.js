@@ -2,7 +2,7 @@
   const $ = s => document.querySelector(s);
 
   const intro = $('#intro'), arView = $('#arView');
-  const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo');
+  const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo'), videoShade = $('.video-shade');
   const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
@@ -216,6 +216,7 @@
   videoStartBtn.addEventListener('click', async () => {
     introOverlay?.classList.add('is-hidden');
     introBanner?.classList.add('is-hidden');
+    videoShade?.classList.add('is-playing');
     videoStartBtn.classList.add('is-hidden');
     launchVideo.currentTime = 0;
     try{

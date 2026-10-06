@@ -1,13 +1,11 @@
-# Kaplanlar WebAR V36 — Executive Polish
+# Kaplanlar WebAR V37 — Management Ready
 
-Bu sürümde:
-- videonun sol üstündeki kırmızı renk/tint kaldırıldı
-- video sonrası AR geçiş ekranı tamamen yeniden tasarlandı
-- CTA ekranı daha yönetim seviyesi, kurumsal ve premium hale getirildi
-- fotoğraf/video kaydetme akışı iOS ve Android için sistem paylaşım menüsüne yönlendirilir
+Düzeltmeler:
+- video oynarken tüm renkli overlay kaldırıldı; videonun üstünde kırmızı tint kalmaz
+- Kaplanlar logosunun dış beyaz zemini transparan yapıldı
+- video sonrası AR geçiş paneli desktop/mobile için yeniden düzenlendi
+- CTA metin çakışmaları önlendi
+- fotoğraf/video kaydetme için iOS/Android sistem paylaşım akışı korunur
 
-Önemli:
-Mobil web tarayıcıları (Safari/Chrome) bir web sayfasının galeriye sessizce ve doğrudan yazmasına izin vermez.
-Bu nedenle iOS ve Android'de güvenilir web çözümü, sistem paylaşım menüsünü açıp kullanıcının
-“Görüntüyü Kaydet / Videoyu Kaydet” veya Google Fotoğraflar / Galeri uygulamasını seçmesidir.
-Tam otomatik galeri kaydı için uygulamanın native/hybrid (ör. Capacitor) paketlenmesi gerekir.
+Mobil web güvenlik modeli gereği Safari ve Chrome, bir web sayfasına galeriye kullanıcı onayı olmadan doğrudan yazma yetkisi vermez.
+Bu nedenle web üzerinde güvenilir çapraz-platform yöntem sistem paylaşım menüsüdür. Tam otomatik galeri kaydı native/hybrid uygulama gerektirir.
