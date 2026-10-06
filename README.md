@@ -1,10 +1,12 @@
-# Kaplanlar WebAR V47 — Direct Onclick
+# Kaplanlar WebAR V48 — Clean Launch + Save
 
-Bu sürümde video başlatma için event listener zinciri tamamen kaldırıldı.
+Fixes:
+- Android açılışında video görüntüsü artık kapak arkasında görünmez.
+- Video sadece “Deneyimi Başlat” butonuna basınca görünür.
+- Rastgele ekrana dokunmak video geçişini tetiklemez.
+- Video bitince AR geçiş ekranı açılır.
+- Fotoğraf/video kaydetme butonları artık doğrudan dosya indirme başlatır.
+- iPhone/iPad / Android uyarı metinleri kaldırıldı.
 
-- Ana butonda doğrudan HTML `onclick` kullanılır.
-- Başlatma fonksiyonu `<head>` içinde global olarak tanımlıdır.
-- `app.js` video başlatma işine artık karışmaz.
-- Kapaktaki ikinci maskot kaldırıldı; videodaki ana maskot görüntüsü kullanılır.
-- Mobil kapak daha temiz ve tek kolonlu hale getirildi.
-- Sesli -> sessiz -> native controls fallback sırası korunur.
+Not: Mobil web tarayıcısı indirilen dosyanın doğrudan Photos/Galeri koleksiyonuna yazılacağını garanti etmez;
+dosya cihazın indirme davranışına göre kaydedilir. Gerçek Photos/Galeri'ye sessiz kayıt native uygulama yetkisi gerektirir.

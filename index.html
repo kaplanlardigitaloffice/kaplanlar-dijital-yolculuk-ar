@@ -6,166 +6,52 @@
   <meta name="theme-color" content="#070a0f" />
   <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=47" />
-
-  <script>
-    window.kaplanlarStart = async function (ev) {
-      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-
-      var video = document.getElementById('launchVideo');
-      var cover = document.getElementById('introOverlay');
-      var shade = document.querySelector('.video-shade');
-      var fallback = document.getElementById('videoFallbackPlay');
-
-      if (!video) return false;
-
-      /* UI transition happens synchronously from the tap. */
-      if (cover) {
-        cover.style.setProperty('display', 'none', 'important');
-        cover.style.setProperty('pointer-events', 'none', 'important');
-      }
-      if (shade) {
-        shade.style.setProperty('opacity', '0', 'important');
-        shade.style.setProperty('pointer-events', 'none', 'important');
-      }
-
-      video.style.setProperty('z-index', '10', 'important');
-      video.style.setProperty('pointer-events', 'auto', 'important');
-      video.playsInline = true;
-      video.controls = false;
-
-      try { video.pause(); } catch (_) {}
-      try { video.currentTime = 0; } catch (_) {}
-
-      /* 1) audible playback from explicit user gesture */
-      try {
-        video.muted = false;
-        video.volume = 1;
-        await video.play();
-        if (fallback) fallback.classList.add('is-hidden');
-        return false;
-      } catch (_) {}
-
-      /* 2) muted fallback */
-      try {
-        video.muted = true;
-        await video.play();
-        if (fallback) fallback.classList.add('is-hidden');
-        return false;
-      } catch (_) {}
-
-      /* 3) native controls + explicit second play target */
-      video.controls = true;
-      if (fallback) {
-        fallback.classList.remove('is-hidden');
-        fallback.style.display = 'flex';
-      }
-      return false;
-    };
-
-    window.kaplanlarFallback = async function (ev) {
-      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
-      var video = document.getElementById('launchVideo');
-      var fallback = document.getElementById('videoFallbackPlay');
-      if (!video) return false;
-
-      try {
-        video.muted = false;
-        await video.play();
-        video.controls = false;
-        if (fallback) fallback.classList.add('is-hidden');
-        return false;
-      } catch (_) {}
-
-      try {
-        video.muted = true;
-        await video.play();
-        video.controls = false;
-        if (fallback) fallback.classList.add('is-hidden');
-      } catch (_) {
-        video.controls = true;
-      }
-      return false;
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      var video = document.getElementById('launchVideo');
-      if (!video) return;
-
-      video.addEventListener('ended', function () {
-        var gateway = document.getElementById('enterArPanel');
-        if (gateway) {
-          gateway.classList.remove('is-hidden');
-          requestAnimationFrame(function () {
-            gateway.classList.add('is-ready');
-          });
-        }
-      });
-    });
-  </script>
-
+  <link rel="stylesheet" href="styles.css?v=48" />
 </head>
 <body>
   <main id="app">
     <section id="intro" class="screen video-intro">
-      <video id="launchVideo" class="launch-video" playsinline preload="auto" webkit-playsinline>
-        <source src="assets/launch_video.mp4?v=47" type="video/mp4" />
+
+      <!-- Video is completely hidden until the actual start button is pressed. -->
+      <video id="launchVideo" class="launch-video launch-video--hidden"
+             playsinline webkit-playsinline preload="metadata">
+        <source src="assets/launch_video.mp4" type="video/mp4" />
       </video>
-      <div class="video-shade"></div>
-      <button id="videoFallbackPlay" type="button" class="video-fallback-play is-hidden" aria-label="Videoyu oynat" onclick="return window.kaplanlarFallback(event);">
-        <span class="v44-fallback-icon"></span>
-        <span>Videoyu Oynat</span>
-      </button>
 
-      <div id="introOverlay" class="intro-overlay-shell v40-cover">
-        <div class="v40-cover-inner">
-          <div class="v40-cover-copy">
-            <div class="v40-overline">KAPLANLAR • DİJİTAL DÖNÜŞÜM</div>
-            <h1 id="introBanner" class="v40-title">
+      <div id="introOverlay" class="v48-cover">
+        <div class="v48-cover-inner">
+          <div class="v48-copy">
+            <div class="v48-overline">KAPLANLAR • DİJİTAL DÖNÜŞÜM</div>
+            <h1>
               <span>Kaplanlar Dijital</span>
-              <span class="v40-title-accent">Yolculuğunu Kaçırma</span>
+              <span>Yolculuğunu Kaçırma</span>
             </h1>
-            <p class="v40-lead">Yeni çalışma biçimlerini, yapay zekâyı ve artırılmış gerçekliği tek bir deneyimde keşfet.</p>
+            <p>Yeni çalışma biçimlerini, yapay zekâyı ve artırılmış gerçekliği tek bir deneyimde keşfet.</p>
 
-            <button id="videoStartBtn" type="button" class="v40-primary-btn" aria-label="Videoyu başlat" onclick="return window.kaplanlarStart(event);">
-              <span class="v40-play" aria-hidden="true"></span>
-              <span class="v40-primary-label">
+            <button id="videoStartBtn" type="button" class="v48-start-btn"
+                    onclick="return window.startKaplanlarVideo(event)">
+              <span class="v48-play"></span>
+              <span>
                 <strong>Deneyimi Başlat</strong>
-                <small>34 saniyelik lansman videosu</small>
+                <small>Lansman videosunu izle</small>
               </span>
             </button>
-            <div id="introPlayStatus" class="intro-play-status is-hidden" aria-live="polite"></div>
           </div>
-        </div>
-
-        <div class="v40-cover-footer">
-          <span>Yapay zekâ lansman deneyimi</span>
-          <span class="v40-footer-dot"></span>
-          <span>WebAR</span>
         </div>
       </div>
 
-      <section id="enterArPanel" class="enter-ar-panel v40-gateway is-hidden" aria-label="Artırılmış gerçeklik deneyimine geçiş">
-        <div class="v40-gateway-inner">
-          <div class="v40-gateway-visual">
-            <div class="v40-gateway-orbit"></div>
-            <img src="assets/cta_mascot.png" alt="Kaplanlar maskotu" class="v40-gateway-mascot" />
+      <section id="enterArPanel" class="v48-gateway is-hidden" aria-label="Artırılmış gerçeklik deneyimine geçiş">
+        <div class="v48-gateway-inner">
+          <div class="v48-gateway-visual">
+            <img src="assets/cta_mascot.png" alt="Kaplanlar maskotu" />
           </div>
-
-          <div class="v40-gateway-copy">
-            <div class="v40-overline">SIRADAKİ DENEYİM</div>
-            <h2>Şimdi dijital yolculuğu<br/>kendi ortamına taşı.</h2>
-            <p>Kameranı aç, Kaplanlar maskotunu bulunduğun alana yerleştir ve artırılmış gerçeklik deneyimini canlı olarak başlat.</p>
-
-            <div class="v40-feature-row" aria-label="Deneyim özellikleri">
-              <span><b>01</b> Yerleştir</span>
-              <span><b>02</b> Ölçekle</span>
-              <span><b>03</b> Fotoğraf / Video</span>
-            </div>
-
-            <button id="enterArBtn" class="v40-enter-btn" aria-label="Artırılmış Gerçekliği Sende Dene">
+          <div class="v48-gateway-copy">
+            <div class="v48-overline">SIRADAKİ DENEYİM</div>
+            <h2>Dijital yolculuğu<br/>kendi ortamına taşı.</h2>
+            <p>Kameranı aç, maskotu bulunduğun alana yerleştir ve artırılmış gerçeklik deneyimini başlat.</p>
+            <button id="enterArBtn" type="button" class="v48-enter-btn">
               <span>Artırılmış Gerçekliği Sende Dene</span>
-              <span class="v40-enter-arrow">→</span>
+              <span>→</span>
             </button>
           </div>
         </div>
@@ -215,9 +101,8 @@
       <div id="photoPreview" class="photo-preview is-hidden" role="dialog" aria-modal="true" aria-label="Çekilen fotoğraf">
         <div class="photo-preview-card">
           <img id="photoPreviewImage" alt="Çekilen AR fotoğrafı" />
-          <div id="saveHint" class="save-hint is-hidden"></div>
           <div class="photo-preview-actions">
-            <button id="saveGalleryBtn" class="preview-primary">Galeriye Kaydet</button>
+            <button id="saveGalleryBtn" class="preview-primary">Telefona Kaydet</button>
             <button id="sharePhotoBtn" class="preview-secondary">Paylaş</button>
             <button id="closePreviewBtn" class="preview-close">Kapat</button>
           </div>
@@ -227,9 +112,8 @@
       <div id="videoPreview" class="photo-preview is-hidden" role="dialog" aria-modal="true" aria-label="Kaydedilen video">
         <div class="photo-preview-card">
           <video id="videoPreviewPlayer" controls playsinline></video>
-          <div id="videoSaveHint" class="save-hint is-hidden"></div>
           <div class="photo-preview-actions">
-            <button id="saveVideoBtn" class="preview-primary">Videoyu Kaydet</button>
+            <button id="saveVideoBtn" class="preview-primary">Telefona Kaydet</button>
             <button id="shareVideoBtn" class="preview-secondary">Paylaş</button>
             <button id="closeVideoPreviewBtn" class="preview-close">Kapat</button>
           </div>
@@ -239,6 +123,73 @@
       <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
-  <script src="app.js?v=47"></script>
+
+  <!-- Independent launch controller. Only the actual CTA starts the video. -->
+  <script>
+    window.startKaplanlarVideo = function (event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      var cover = document.getElementById('introOverlay');
+      var video = document.getElementById('launchVideo');
+
+      if (!video) return false;
+
+      if (cover) {
+        cover.classList.add('is-hidden');
+        cover.style.pointerEvents = 'none';
+      }
+
+      video.classList.remove('launch-video--hidden');
+      video.classList.add('launch-video--active');
+      video.controls = false;
+      video.playsInline = true;
+
+      try {
+        video.currentTime = 0;
+        video.muted = false;
+        video.volume = 1;
+
+        var playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+          playPromise.catch(function () {
+            video.muted = true;
+            var mutedPlay = video.play();
+            if (mutedPlay && typeof mutedPlay.catch === 'function') {
+              mutedPlay.catch(function () {
+                video.controls = true;
+              });
+            }
+          });
+        }
+      } catch (e) {
+        video.controls = true;
+      }
+
+      return false;
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var video = document.getElementById('launchVideo');
+      var gateway = document.getElementById('enterArPanel');
+
+      if (video) {
+        video.addEventListener('ended', function () {
+          video.classList.add('launch-video--hidden');
+          video.classList.remove('launch-video--active');
+
+          if (gateway) {
+            gateway.classList.remove('is-hidden');
+            requestAnimationFrame(function () {
+              gateway.classList.add('is-ready');
+            });
+          }
+        });
+      }
+    });
+  </script>
+  <script src="app.js?v=48"></script>
 </body>
 </html>
