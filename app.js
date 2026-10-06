@@ -3,7 +3,7 @@
 
   const intro = $('#intro'), arView = $('#arView');
   const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo');
-  const videoStartBtn = $('#videoStartBtn'), enterArBtn = $('#enterArBtn');
+  const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
@@ -229,8 +229,8 @@
   });
 
   launchVideo.addEventListener('ended', () => {
-    enterArBtn.classList.remove('is-hidden');
-    enterArBtn.classList.add('is-ready');
+    enterArPanel.classList.remove('is-hidden');
+    requestAnimationFrame(() => enterArPanel.classList.add('is-ready'));
   });
 
   enterArBtn.addEventListener('click', openArExperience);
@@ -376,22 +376,52 @@
     photoPreview.classList.add('is-hidden');
   }
 
+  function platformFamily(){
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/i.test(ua);
+    return { isIOS, isAndroid };
+  }
+
+  async function shareFileForGallery(file, hintEl, kind='image'){
+    const {isIOS, isAndroid} = platformFamily();
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title: kind === 'image' ? 'Kaplanlar AR Fotoğrafı' : 'Kaplanlar AR Videosu'});
+      if(isIOS){
+        setHint(hintEl, kind === 'image'
+          ? 'iPhone/iPad: paylaşım menüsünden “Görüntüyü Kaydet” seçin.'
+          : 'iPhone/iPad: paylaşım menüsünden “Videoyu Kaydet” seçin.');
+      }else if(isAndroid){
+        setHint(hintEl, kind === 'image'
+          ? 'Android: paylaşım menüsünden Google Fotoğraflar / Galeri uygulamasını seçin.'
+          : 'Android: paylaşım menüsünden Google Fotoğraflar / Galeri uygulamasını seçin.');
+      }else{
+        setHint(hintEl, 'Açılan sistem menüsünden cihazına kaydetme seçeneğini kullan.');
+      }
+      return true;
+    }
+    return false;
+  }
+
   async function savePhotoToGallery(){
     if(!capturedBlob) return;
     const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
     try{
-      if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
-        await navigator.share({ files:[file], title:'Kaplanlar AR Fotoğrafı' });
-        setHint(saveHint, 'Açılan menüden “Görüntüyü Kaydet / Fotoğraflara Kaydet” seçin.');
-      } else {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(capturedBlob);
-        a.download = capturedFileName || 'kaplanlar-ar.png';
-        document.body.appendChild(a); a.click(); a.remove();
-        setHint(saveHint, 'Dosya indirildi. Telefonunda Fotoğraflar veya Dosyalar içinden kaydedebilirsin.');
-      }
-    } catch(err){
-      if(err && err.name !== 'AbortError') setHint(saveHint, 'Kaydetme açılamadı.');
+      const shared = await shareFileForGallery(file, saveHint, 'image');
+      if(shared) return;
+
+      // Desktop / unsupported mobile fallback: download the actual file.
+      const url = URL.createObjectURL(capturedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = capturedFileName || 'kaplanlar-ar.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      setHint(saveHint, 'Dosya indirildi. Mobil tarayıcı galeriye doğrudan yazmayı desteklemiyor.');
+    }catch(err){
+      if(err && err.name !== 'AbortError') setHint(saveHint, 'Kaydetme menüsü açılamadı.');
     }
   }
 
@@ -469,18 +499,19 @@
     if(!recordedBlob) return;
     const file = new File([recordedBlob], recordedFileName || 'kaplanlar-ar-video.webm', { type:'video/webm' });
     try{
-      if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
-        await navigator.share({ files:[file], title:'Kaplanlar AR Videosu' });
-        setHint(videoSaveHint, 'Açılan menüden “Videoyu Kaydet” seçin.');
-      } else {
-        const a = document.createElement('a');
-        a.href = recordedObjectUrl;
-        a.download = recordedFileName || 'kaplanlar-ar-video.webm';
-        document.body.appendChild(a); a.click(); a.remove();
-        setHint(videoSaveHint, 'Video indirildi. Galeriye almak için cihazından kaydet.');
-      }
-    } catch(err){
-      if(err && err.name !== 'AbortError') setHint(videoSaveHint, 'Kaydetme açılamadı.');
+      const shared = await shareFileForGallery(file, videoSaveHint, 'video');
+      if(shared) return;
+
+      const url = recordedObjectUrl || URL.createObjectURL(recordedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = recordedFileName || 'kaplanlar-ar-video.webm';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setHint(videoSaveHint, 'Video indirildi. Mobil tarayıcı galeriye doğrudan yazmayı desteklemiyor.');
+    }catch(err){
+      if(err && err.name !== 'AbortError') setHint(videoSaveHint, 'Kaydetme menüsü açılamadı.');
     }
   }
 

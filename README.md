@@ -1,9 +1,13 @@
-# Kaplanlar WebAR V35 — Executive Intro
+# Kaplanlar WebAR V36 — Executive Polish
 
-Bu sürümde giriş ekranı yönetim sunumuna uygun daha premium / kurumsal hale getirildi:
-- üst sağda şeffaf Kaplanlar marka alanı
-- daha güçlü ve profesyonel kırmızı hero ribbon
-- daha rafine video başlat CTA
-- video bitince daha premium AR deneyim kartı
+Bu sürümde:
+- videonun sol üstündeki kırmızı renk/tint kaldırıldı
+- video sonrası AR geçiş ekranı tamamen yeniden tasarlandı
+- CTA ekranı daha yönetim seviyesi, kurumsal ve premium hale getirildi
+- fotoğraf/video kaydetme akışı iOS ve Android için sistem paylaşım menüsüne yönlendirilir
 
-İşlevler V34 ile aynı kalır.
+Önemli:
+Mobil web tarayıcıları (Safari/Chrome) bir web sayfasının galeriye sessizce ve doğrudan yazmasına izin vermez.
+Bu nedenle iOS ve Android'de güvenilir web çözümü, sistem paylaşım menüsünü açıp kullanıcının
+“Görüntüyü Kaydet / Videoyu Kaydet” veya Google Fotoğraflar / Galeri uygulamasını seçmesidir.
+Tam otomatik galeri kaydı için uygulamanın native/hybrid (ör. Capacitor) paketlenmesi gerekir.
