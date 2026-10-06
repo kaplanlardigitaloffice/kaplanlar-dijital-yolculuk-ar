@@ -221,112 +221,74 @@
     introPlayStatus.classList.toggle('is-hidden', !message);
   }
 
-  function enterVideoMode(){
-    // Never leave the user stuck on the cover after pressing the main CTA.
+  function showVideoScreen(){
     introOverlay?.classList.add('is-hidden');
     introBanner?.classList.add('is-hidden');
     videoShade?.classList.add('is-playing');
-    setIntroPlayStatus('');
+    videoFallbackPlay?.classList.add('is-hidden');
   }
 
-  async function playLaunchVideoFromGesture(){
-    launchVideo.currentTime = 0;
-    launchVideo.playsInline = true;
-
-    // First attempt: audible playback from the explicit user gesture.
-    try{
-      launchVideo.muted = false;
-      launchVideo.volume = 1;
-      await launchVideo.play();
-      return true;
-    }catch(e){}
-
-    // Second attempt: muted, which is accepted by stricter mobile browsers.
-    try{
-      launchVideo.muted = true;
-      await launchVideo.play();
-      return true;
-    }catch(e){}
-
-    return false;
-  }
-
-  async function startLaunchExperience(e){
-    if(e){
-      e.preventDefault?.();
-      e.stopPropagation?.();
-    }
+  async function startLaunchExperience(){
     if(launchStarting) return;
-
     launchStarting = true;
-    videoStartBtn.disabled = true;
-    videoStartBtn.classList.add('is-loading');
 
-    // The screen changes immediately on tap. Playback failure no longer traps
-    // the user on the landing page.
-    enterVideoMode();
+    try{
+      // Immediate UI transition from the user click.
+      showVideoScreen();
 
-    const started = await playLaunchVideoFromGesture();
-
-    if(!started){
-      // Browser-specific fallback: expose the video's native controls and a
-      // second direct play target over the video.
-      launchVideo.controls = true;
-      videoFallbackPlay?.classList.remove('is-hidden');
-    }else{
       launchVideo.controls = false;
-      videoFallbackPlay?.classList.add('is-hidden');
-    }
+      launchVideo.currentTime = 0;
+      launchVideo.playsInline = true;
 
-    launchStarting = false;
-    videoStartBtn.disabled = false;
-    videoStartBtn.classList.remove('is-loading');
+      // Explicit click should allow audible playback on most mobile browsers.
+      try{
+        launchVideo.muted = false;
+        launchVideo.volume = 1;
+        await launchVideo.play();
+      }catch(err){
+        // Strong fallback: muted video is broadly allowed.
+        launchVideo.muted = true;
+        try{
+          await launchVideo.play();
+        }catch(err2){
+          // Final fallback: native controls + direct play button.
+          launchVideo.controls = true;
+          videoFallbackPlay?.classList.remove('is-hidden');
+        }
+      }
+    }finally{
+      launchStarting = false;
+    }
   }
 
-  async function fallbackPlay(e){
-    e?.preventDefault?.();
-    e?.stopPropagation?.();
-
-    let started = false;
+  async function fallbackPlay(){
     try{
       launchVideo.muted = false;
       await launchVideo.play();
-      started = true;
-    }catch(e1){
-      try{
-        launchVideo.muted = true;
-        await launchVideo.play();
-        started = true;
-      }catch(e2){}
-    }
-
-    if(started){
       launchVideo.controls = false;
       videoFallbackPlay?.classList.add('is-hidden');
-    }else{
-      launchVideo.controls = true;
+    }catch(err){
+      launchVideo.muted = true;
+      try{
+        await launchVideo.play();
+        launchVideo.controls = false;
+        videoFallbackPlay?.classList.add('is-hidden');
+      }catch(err2){
+        launchVideo.controls = true;
+      }
     }
   }
 
-  // Pointerup works consistently across mouse, Android Chrome and iOS Safari.
-  videoStartBtn?.addEventListener('pointerup', startLaunchExperience);
-  // Keyboard accessibility / browsers without pointer events.
-  videoStartBtn?.addEventListener('click', (e) => {
-    if(e.detail === 0) startLaunchExperience(e);
-  });
-  videoFallbackPlay?.addEventListener('pointerup', fallbackPlay);
-  videoFallbackPlay?.addEventListener('click', (e) => {
-    if(e.detail === 0) fallbackPlay(e);
-  });
+  // Plain click is the most compatible event across iOS Safari, Android Chrome and desktop.
+  videoStartBtn?.addEventListener('click', startLaunchExperience);
+  videoFallbackPlay?.addEventListener('click', fallbackPlay);
 
   launchVideo.addEventListener('playing', () => {
     videoFallbackPlay?.classList.add('is-hidden');
-    launchVideo.controls = false;
   });
 
   launchVideo.addEventListener('error', () => {
-    // If media loading itself fails, still expose native controls for a clear
-    // recoverable UI instead of silently returning to the cover.
+    showVideoScreen();
     launchVideo.controls = true;
     videoFallbackPlay?.classList.remove('is-hidden');
   });
@@ -336,7 +298,7 @@
     requestAnimationFrame(() => enterArPanel.classList.add('is-ready'));
   });
 
-  enterArBtn.addEventListener('click', openArExperience);
+  enterArBtn?.addEventListener('click', openArExperience);
 
   async function placeMascot(x,y){
     if(placed) return;
@@ -737,7 +699,5 @@
 
   updateCameraButtons();
 
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  // V45: service worker registration intentionally disabled to avoid stale launch assets during rollout.
 })();
