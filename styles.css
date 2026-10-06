@@ -2999,3 +2999,45 @@ body.landscape-preferred .placement-guide{
 .mascot-refresh-btn:disabled{
   opacity:.55;
 }
+
+
+/* V52 — picker always visible and clearly separated */
+.mascot-picker{
+  z-index:80 !important;
+  bottom:calc(104px + env(safe-area-inset-bottom)) !important;
+  pointer-events:none !important;
+}
+.mascot-picker-head{
+  pointer-events:auto !important;
+}
+.mascot-track{
+  pointer-events:auto !important;
+  min-height:82px !important;
+  justify-content:center;
+}
+.mascot-option{
+  opacity:1 !important;
+  visibility:visible !important;
+  flex:0 0 74px !important;
+  width:74px !important;
+  height:74px !important;
+}
+.mascot-option img{
+  display:block !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+@media(max-width:720px){
+  .mascot-picker{
+    bottom:calc(98px + env(safe-area-inset-bottom)) !important;
+  }
+  .mascot-track{
+    justify-content:flex-start;
+    min-height:74px !important;
+  }
+  .mascot-option{
+    flex-basis:66px !important;
+    width:66px !important;
+    height:66px !important;
+  }
+}

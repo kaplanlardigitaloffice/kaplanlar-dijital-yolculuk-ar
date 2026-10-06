@@ -128,7 +128,6 @@
     video.style.transformOrigin = 'center center';
     video.style.transform = `scale(${cameraZoom >= 1 ? cameraZoom : 1})`;
     updateCameraButtons();
-  loadMascotOptions();
   }
 
   async function discoverVideoDevices(){
@@ -205,6 +204,8 @@
     anchor.classList.remove('is-placed');
 
     await startCamera();
+    bindStaticMascotOptions();
+    await loadMascotOptions();
   }
 
   // V47: launch flow is handled directly in index.html.
@@ -253,53 +254,26 @@
   }
 
 
-  const MASCOT_REPO_API =
-    'https://api.github.com/repos/kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar/contents/assets';
+  function bindStaticMascotOptions(){
+    if(!mascotTrack) return;
 
-  async function discoverMascotsFromGitHub(){
-    try{
-      const res = await fetch(MASCOT_REPO_API + '?_=' + Date.now(), {
-        cache:'no-store',
-        headers:{ 'Accept':'application/vnd.github+json' }
+    mascotTrack.querySelectorAll('.mascot-option').forEach((btn, index) => {
+      if(btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const src = btn.dataset.src;
+        if(!src) return;
+
+        selectedMascotSrc = src + `?v=${Date.now()}`;
+        crossfadeFrame(selectedMascotSrc);
+
+        mascotTrack.querySelectorAll('.mascot-option')
+          .forEach(el => el.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
       });
-      if(!res.ok) return [];
-
-      const files = await res.json();
-      if(!Array.isArray(files)) return [];
-
-      return files
-        .filter(file =>
-          file &&
-          file.type === 'file' &&
-          /^(mascot|maskot)[-_].+\.(png|webp|jpe?g)$/i.test(file.name)
-        )
-        .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}))
-        .map(file => ({
-          name:file.name,
-          src:`assets/${encodeURIComponent(file.name)}?v=${String(file.sha || '').slice(0,12)}`
-        }));
-    }catch(e){
-      return [];
-    }
-  }
-
-  async function assetExists(src){
-    try{
-      let res = await fetch(src + (src.includes('?') ? '&' : '?') + '_=' + Date.now(), {
-        method:'HEAD',
-        cache:'no-store'
-      });
-      if(res.ok) return true;
-
-      // Some static hosts/proxies are inconsistent with HEAD.
-      res = await fetch(src + (src.includes('?') ? '&' : '?') + '_=' + Date.now(), {
-        method:'GET',
-        cache:'no-store'
-      });
-      return res.ok;
-    }catch(e){
-      return false;
-    }
+    });
   }
 
   function renderMascotPicker(){
@@ -307,8 +281,8 @@
     mascotTrack.innerHTML = '';
 
     mascotOptions.forEach((item, index) => {
-      const src = typeof item === 'string' ? item : item.src;
-      const name = typeof item === 'string' ? `Maskot ${index + 1}` : item.name;
+      const src = item.src;
+      const name = item.name || `Maskot ${index + 1}`;
 
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -317,17 +291,14 @@
       btn.setAttribute('aria-label', name);
 
       const img = document.createElement('img');
-      img.crossOrigin = 'anonymous';
-      img.src = src;
+      img.src = src + (src.includes('?') ? '&' : '?') + 'v=' + Date.now();
       img.alt = '';
       img.draggable = false;
 
       btn.appendChild(img);
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectedMascotSrc = src;
-        mascotA.crossOrigin = 'anonymous';
-        mascotB.crossOrigin = 'anonymous';
+        selectedMascotSrc = src + (src.includes('?') ? '&' : '?') + 'v=' + Date.now();
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
@@ -340,39 +311,37 @@
   }
 
   async function loadMascotOptions(){
-    // Preferred path: read the live public GitHub assets folder.
-    const githubMascots = await discoverMascotsFromGitHub();
+    try{
+      const res = await fetch(`assets/mascots.json?_=${Date.now()}`, { cache:'no-store' });
+      if(!res.ok) throw new Error('manifest unavailable');
 
-    if(githubMascots.length){
-      mascotOptions = githubMascots;
-      selectedMascotSrc = githubMascots[0].src;
-      mascotA.crossOrigin = 'anonymous';
-      mascotB.crossOrigin = 'anonymous';
+      const data = await res.json();
+      const items = Array.isArray(data) ? data : data.mascots;
+
+      if(!Array.isArray(items) || !items.length){
+        throw new Error('empty mascot manifest');
+      }
+
+      mascotOptions = items
+        .filter(item => item && item.src)
+        .map(item => ({
+          name: item.name || item.src.split('/').pop(),
+          src: item.src
+        }));
+
+      selectedMascotSrc = mascotOptions[0].src + `?v=${Date.now()}`;
       crossfadeFrame(selectedMascotSrc);
       renderMascotPicker();
-      return;
+    }catch(e){
+      mascotOptions = [
+        {name:'mascot_01.png', src:'assets/mascots/mascot_01.png'},
+        {name:'mascot_02.png', src:'assets/mascots/mascot_02.png'},
+        {name:'mascot_03.png', src:'assets/mascots/mascot_03.png'}
+      ];
+      selectedMascotSrc = mascotOptions[0].src + `?v=${Date.now()}`;
+      crossfadeFrame(selectedMascotSrc);
+      renderMascotPicker();
     }
-
-    // Offline / API fallback: scan the complete numeric convention without
-    // stopping at the first naming gap.
-    const found = [];
-    for(let i=1; i<=60; i++){
-      const name = `mascot_${String(i).padStart(2,'0')}.png`;
-      const src = `assets/${name}`;
-      if(await assetExists(src)){
-        found.push({ name, src });
-      }
-    }
-
-    mascotOptions = found.length ? found : [
-      {name:'mascot_01.png', src:'assets/mascot_01.png'},
-      {name:'mascot_02.png', src:'assets/mascot_02.png'},
-      {name:'mascot_03.png', src:'assets/mascot_03.png'}
-    ];
-
-    selectedMascotSrc = mascotOptions[0].src;
-    crossfadeFrame(selectedMascotSrc);
-    renderMascotPicker();
   }
 
 
@@ -664,6 +633,8 @@
   });
 
   updateCameraButtons();
+  bindStaticMascotOptions();
+  loadMascotOptions();
 
-  // V45: service worker registration intentionally disabled to avoid stale launch assets during rollout.
+  // V52: no service worker registration, preventing stale picker assets.
 })();
