@@ -2503,3 +2503,14 @@ body.landscape-preferred .placement-guide{
 #introOverlay.is-hidden{
   pointer-events:none !important;
 }
+
+
+/* V46 — direct launch hard guarantees */
+#videoStartBtn{
+  cursor:pointer !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+}
+#launchVideo{
+  pointer-events:auto;
+}

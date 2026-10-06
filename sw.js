@@ -1,3 +1,3 @@
-// V45: service worker intentionally unused during stable rollout.
+// V46: intentionally no caching.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));

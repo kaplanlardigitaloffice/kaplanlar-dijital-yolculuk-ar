@@ -280,8 +280,8 @@
   }
 
   // Plain click is the most compatible event across iOS Safari, Android Chrome and desktop.
-  videoStartBtn?.addEventListener('click', startLaunchExperience);
-  videoFallbackPlay?.addEventListener('click', fallbackPlay);
+  // V46: launch button is handled by dependency-free inline controller in index.html.
+  // V46: fallback button is handled by dependency-free inline controller in index.html.
 
   launchVideo.addEventListener('playing', () => {
     videoFallbackPlay?.classList.add('is-hidden');
