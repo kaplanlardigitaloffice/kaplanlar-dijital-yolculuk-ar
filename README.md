@@ -1,7 +1,11 @@
-# Kaplanlar WebAR V33 — GitHub Ready
+# Kaplanlar WebAR V34 — Video Intro + Record
 
-Bu sürüm V32 ile aynı akışı kullanır, ancak giriş videosu GitHub web arayüzünden yüklenebilecek boyuta optimize edilmiştir.
-
-- Video: 1920×1080 H.264 + AAC
-- `launch_video.mp4` 25 MB sınırının altına düşürüldü
-- Uygulama akışı ve AR dosyaları değiştirilmedi
+Bu sürümde:
+- girişte kırmızı profesyonel banner: **Kaplanlar Dijital Yolculuğunu Kaçırma**
+- video otomatik başlamaz; kullanıcı **Videoyu Başlat** ile başlatır
+- video başlayınca banner ve başlat butonu kalkar
+- video bitince maskot görselli **Artırılmış Gerçekliği Sende Dene** kartı görünür
+- 16:9 kontrolü kaldırıldı
+- AR ekranında video kayıt butonu eklendi
+- maskot boyutlandırma pinch ile devam eder
+- fotoğraf ve video için kaydet / paylaş önizlemeleri vardır

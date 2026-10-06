@@ -603,3 +603,261 @@ body.landscape-preferred .placement-guide{
     font-size:14px;
   }
 }
+
+
+/* V34 — new intro, CTA mascot, remove 16:9, add video record */
+.video-intro{
+  position:relative;
+  width:100%;
+  height:100dvh;
+  overflow:hidden;
+  background:#020304;
+}
+.launch-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  background:#000;
+}
+.video-shade{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(2,4,8,.42) 0%,rgba(2,4,8,.06) 28%,rgba(2,4,8,.02) 68%,rgba(2,4,8,.54) 100%);
+}
+.intro-banner{
+  position:absolute;
+  top:calc(24px + env(safe-area-inset-top));
+  left:50%;
+  transform:translateX(-50%);
+  z-index:8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:62px;
+  width:min(92vw,760px);
+  padding:12px 28px;
+  border-radius:20px;
+  background:linear-gradient(180deg,#df1735,#b90d28);
+  color:#fff;
+  font-size:clamp(20px,3.7vw,40px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  text-align:center;
+  box-shadow:0 18px 40px rgba(185,13,40,.28);
+}
+.video-start-btn{
+  position:absolute;
+  left:50%;
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:9;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-height:54px;
+  padding:0 20px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(7,9,13,.58);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 18px 45px rgba(0,0,0,.24);
+}
+.play-icon{
+  width:0;
+  height:0;
+  border-top:7px solid transparent;
+  border-bottom:7px solid transparent;
+  border-left:11px solid #fff;
+}
+.enter-ar-card{
+  position:absolute;
+  left:50%;
+  bottom:calc(28px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:9;
+  width:min(88vw,360px);
+  padding:18px 16px 16px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:26px;
+  background:rgba(10,12,16,.58);
+  backdrop-filter:blur(22px) saturate(120%);
+  -webkit-backdrop-filter:blur(22px) saturate(120%);
+  box-shadow:0 22px 56px rgba(0,0,0,.32);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+}
+.enter-ar-mascot{
+  width:min(48vw,220px);
+  max-width:220px;
+  height:auto;
+  display:block;
+  filter:drop-shadow(0 18px 24px rgba(0,0,0,.28));
+}
+.enter-ar-text{
+  color:#fff;
+  font-size:15px;
+  font-weight:750;
+  letter-spacing:.01em;
+  text-align:center;
+}
+
+.premium-camera-bar{
+  position:absolute;
+  left:50%;
+  bottom:calc(18px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:35;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 10px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:rgba(7,9,13,.56);
+  backdrop-filter:blur(22px) saturate(130%);
+  -webkit-backdrop-filter:blur(22px) saturate(130%);
+  box-shadow:0 14px 40px rgba(0,0,0,.26);
+}
+.lens-selector{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  padding:3px;
+  border-radius:999px;
+  background:rgba(255,255,255,.045);
+}
+.lens-chip{
+  height:34px;
+  min-width:42px;
+  padding:0 10px;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:rgba(255,255,255,.67);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.01em;
+  cursor:pointer;
+  transition:background .2s ease,color .2s ease,transform .2s ease;
+}
+.lens-chip.is-active{background:rgba(255,255,255,.94);color:#090b0f}
+.lens-chip:disabled{opacity:.28;cursor:not-allowed}
+.record-btn{
+  height:40px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 14px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.record-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#ff3b30;
+  box-shadow:0 0 0 4px rgba(255,59,48,.14);
+}
+.record-btn.is-recording{
+  background:rgba(185,13,40,.22);
+}
+.record-btn.is-recording .record-dot{
+  animation:recordPulse 1s infinite;
+}
+@keyframes recordPulse{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(.78);opacity:.64}
+}
+.shutter-btn{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.92);
+  background:transparent;
+  display:grid;
+  place-items:center;
+  padding:0;
+  cursor:pointer;
+  box-shadow:0 0 0 1px rgba(0,0,0,.18);
+}
+.shutter-btn span{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .12s ease,background .12s ease;
+}
+.shutter-btn:active span{transform:scale(.88);background:#e9edf2}
+.resize-hint{
+  position:absolute;
+  left:50%;
+  bottom:calc(82px + env(safe-area-inset-bottom));
+  transform:translateX(-50%);
+  z-index:34;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(5,7,11,.54);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  color:rgba(255,255,255,.86);
+  font-size:11px;
+  letter-spacing:.015em;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.save-hint{
+  color:#dbe2ea;
+  font-size:12px;
+  line-height:1.45;
+}
+#videoPreviewPlayer{
+  width:100%;
+  max-height:72dvh;
+  background:#05070b;
+}
+@media(max-width:640px){
+  .intro-banner{
+    top:calc(18px + env(safe-area-inset-top));
+    width:94vw;
+    min-height:56px;
+    padding:10px 18px;
+    font-size:clamp(22px,6vw,30px);
+  }
+  .video-start-btn{
+    bottom:calc(18px + env(safe-area-inset-bottom));
+  }
+  .enter-ar-card{
+    width:min(92vw,340px);
+    bottom:calc(18px + env(safe-area-inset-bottom));
+    padding-top:14px;
+  }
+  .enter-ar-mascot{
+    width:min(54vw,190px);
+  }
+  .premium-camera-bar{
+    gap:8px;
+    padding:7px 8px;
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    max-width:96vw;
+  }
+  .lens-chip{min-width:36px;padding:0 8px;font-size:11px}
+  .record-btn{padding:0 12px}
+  .shutter-btn{width:46px;height:46px}
+  .shutter-btn span{width:34px;height:34px}
+  .resizeHint{bottom:calc(76px + env(safe-area-inset-bottom))}
+}

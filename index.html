@@ -11,20 +11,21 @@
 <body>
   <main id="app">
     <section id="intro" class="screen video-intro">
-      <video id="launchVideo" class="launch-video" playsinline preload="auto">
+      <video id="launchVideo" class="launch-video" playsinline preload="auto" webkit-playsinline>
         <source src="assets/launch_video.mp4" type="video/mp4" />
       </video>
       <div class="video-shade"></div>
 
-      <div class="intro-title">Kaplanlar Dijital Yolculuğunu Kaçırma</div>
+      <div id="introBanner" class="intro-banner">Kaplanlar Dijital Yolculuğunu Kaçırma</div>
 
-      <button id="videoStartBtn" class="video-start-btn is-hidden" aria-label="Videoyu başlat">
+      <button id="videoStartBtn" class="video-start-btn" aria-label="Videoyu başlat">
         <span class="play-icon"></span>
         <span>Videoyu Başlat</span>
       </button>
 
-      <button id="enterArBtn" class="enter-ar-btn is-hidden">
-        Artırılmış Gerçekliği Sende Dene
+      <button id="enterArBtn" class="enter-ar-card is-hidden" aria-label="Artırılmış Gerçekliği Sende Dene">
+        <img src="assets/cta_mascot.png" alt="Kaplanlar maskotu" class="enter-ar-mascot" />
+        <span class="enter-ar-text">Artırılmış Gerçekliği Sende Dene</span>
       </button>
     </section>
 
@@ -44,7 +45,6 @@
         <div class="mascot-stage">
           <div class="floor-grid"></div>
           <div class="voice-orb"></div>
-          <div class="voice-bars"><span></span><span></span><span></span><span></span><span></span></div>
           <div id="mascotFrame" class="mascot-frame">
             <img id="mascotA" class="mascot-layer is-active" src="assets/frame_19.png" alt="Kaplanlar maskotu" draggable="false" />
             <img id="mascotB" class="mascot-layer" src="assets/frame_19.png" alt="" draggable="false" />
@@ -59,14 +59,16 @@
           <button id="lens15Btn" class="lens-chip" data-zoom="1.5">1.5×</button>
           <button id="lens2Btn" class="lens-chip" data-zoom="2">2×</button>
         </div>
-        <button id="landscapeBtn" class="bar-icon-btn" aria-label="Yatay çekim modu" title="Yatay çekim">16:9</button>
+        <button id="recordBtn" class="record-btn" aria-label="Video kaydı başlat" title="Video kaydı">
+          <span class="record-dot"></span><span class="record-label">Kayıt</span>
+        </button>
         <button id="photoBtn" class="shutter-btn" aria-label="Fotoğraf çek" title="Fotoğraf çek"><span></span></button>
       </div>
 
       <div id="resizeHint" class="resize-hint is-hidden">İki parmakla maskot boyutunu ayarlayın</div>
-
       <div id="toast" class="toast is-hidden"></div>
       <div id="errorBox" class="error-box is-hidden"></div>
+
       <div id="photoPreview" class="photo-preview is-hidden" role="dialog" aria-modal="true" aria-label="Çekilen fotoğraf">
         <div class="photo-preview-card">
           <img id="photoPreviewImage" alt="Çekilen AR fotoğrafı" />
@@ -78,6 +80,19 @@
           </div>
         </div>
       </div>
+
+      <div id="videoPreview" class="photo-preview is-hidden" role="dialog" aria-modal="true" aria-label="Kaydedilen video">
+        <div class="photo-preview-card">
+          <video id="videoPreviewPlayer" controls playsinline></video>
+          <div id="videoSaveHint" class="save-hint is-hidden"></div>
+          <div class="photo-preview-actions">
+            <button id="saveVideoBtn" class="preview-primary">Videoyu Kaydet</button>
+            <button id="shareVideoBtn" class="preview-secondary">Paylaş</button>
+            <button id="closeVideoPreviewBtn" class="preview-close">Kapat</button>
+          </div>
+        </div>
+      </div>
+
       <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
