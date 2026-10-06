@@ -223,3 +223,44 @@ img{display:block;max-width:100%}
     gap:8px;
   }
 }
+
+
+/* V28 camera controls */
+.camera-fab-group{
+  position:absolute;
+  left:16px;
+  bottom:18px;
+  z-index:24;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  max-width:min(72vw,260px);
+}
+.cam-btn{font-size:16px}
+.cam-text-btn{font-size:12px;font-weight:700;letter-spacing:.02em}
+.fab-btn.is-active{
+  border-color:rgba(239,54,81,.9);
+  box-shadow:0 0 0 1px rgba(239,54,81,.45),0 10px 24px rgba(0,0,0,.18);
+  background:rgba(31,10,14,.86);
+}
+.fab-btn:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+}
+body.landscape-preferred .camera-overlay{
+  background:linear-gradient(180deg,rgba(4,6,10,.22),transparent 18%,transparent 82%,rgba(4,6,10,.22));
+}
+body.landscape-preferred .placement-guide{
+  top:50%;
+}
+@media(max-width:640px){
+  .camera-fab-group{
+    left:12px;
+    bottom:14px;
+    max-width:220px;
+    display:grid;
+    grid-template-columns:48px 48px;
+    gap:8px;
+  }
+  .cam-btn,.cam-text-btn{font-size:11px}
+}

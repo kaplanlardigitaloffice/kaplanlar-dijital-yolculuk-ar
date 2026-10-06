@@ -4,13 +4,13 @@
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
   const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), zoomInBtn = $('#zoomInBtn'), zoomOutBtn = $('#zoomOutBtn');
+  const camZoomInBtn = $('#camZoomInBtn'), camZoomOutBtn = $('#camZoomOutBtn'), wideBtn = $('#wideBtn'), landscapeBtn = $('#landscapeBtn');
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
   const sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
 
   const frame = n => `assets/frame_${String(n).padStart(2,'0')}.png`;
-
   const groups = {
     curious:[frame(1),frame(2),frame(3),frame(4),frame(5),frame(6)],
     invite:[frame(7),frame(8),frame(9),frame(10),frame(11),frame(12)],
@@ -18,8 +18,7 @@
     calm:[frame(19),frame(20),frame(21),frame(22),frame(23),frame(24)]
   };
 
-  // V25: cinematic pacing. Each sentence uses only a few deliberate poses.
-  // No fast looping. A pose stays visible long enough to feel like one continuous performance.
+  // calm cinematic pacing
   const scriptTimeline = [
     { start:0.00, end:2.80, mood:'curious', shots:[frame(1),frame(3)], ai:false },
     { start:2.80, end:7.20, mood:'warm', shots:[frame(19)], ai:false },
@@ -32,15 +31,32 @@
     { start:30.00, end:33.20, mood:'energy', shots:[frame(11)], ai:false }
   ];
 
-  let stream = null, placed = false, scale = 1.16, drag = null, pinchDistance = null;
+  let stream = null, cameraTrack = null, placed = false, scale = 1.16, drag = null, pinchDistance = null;
   let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, shotTimers = [], quietTimer = null;
   let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
+
+  let currentDeviceId = null, defaultRearDeviceId = null, wideRearDeviceId = null;
+  let currentCamZoom = 1, camZoomMin = 1, camZoomMax = 1, camZoomStep = 0.25, camZoomSupported = false;
+  let landscapeMode = false, wideMode = false;
 
   function showToast(msg){
     toast.textContent = msg;
     toast.classList.remove('is-hidden');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.add('is-hidden'), 1800);
+    showToast._t = setTimeout(() => toast.classList.add('is-hidden'), 2200);
+  }
+
+  function setControlState(el, active=false, disabled=false){
+    if(!el) return;
+    el.classList.toggle('is-active', !!active);
+    el.disabled = !!disabled;
+  }
+
+  function updateCameraButtons(){
+    setControlState(camZoomInBtn, false, !camZoomSupported || !cameraTrack || currentCamZoom >= camZoomMax - 0.01);
+    setControlState(camZoomOutBtn, false, !camZoomSupported || !cameraTrack || currentCamZoom <= camZoomMin + 0.01);
+    setControlState(wideBtn, wideMode, !cameraTrack && !wideRearDeviceId);
+    setControlState(landscapeBtn, landscapeMode, false);
   }
 
   async function unlockAudio(){
@@ -60,23 +76,68 @@
     }
   }
 
+  async function discoverVideoDevices(){
+    try{
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const vids = devices.filter(d => d.kind === 'videoinput');
+      const rear = vids.filter(d => /back|rear|environment|arka/i.test(d.label));
+      defaultRearDeviceId = (rear[0] || vids[0] || {}).deviceId || null;
+      const wideMatch = rear.find(d => /ultra|wide|0\.5|geniş|genis/i.test(d.label) && d.deviceId !== defaultRearDeviceId);
+      wideRearDeviceId = wideMatch ? wideMatch.deviceId : null;
+      if(!currentDeviceId) currentDeviceId = defaultRearDeviceId;
+    } catch(e) {}
+  }
+
+  async function refreshTrackCapabilities(){
+    cameraTrack = stream?.getVideoTracks?.()[0] || null;
+    camZoomSupported = false;
+    camZoomMin = 1; camZoomMax = 1; camZoomStep = 0.25; currentCamZoom = 1;
+    if(cameraTrack && cameraTrack.getCapabilities){
+      const caps = cameraTrack.getCapabilities();
+      const settings = cameraTrack.getSettings ? cameraTrack.getSettings() : {};
+      if(caps && typeof caps.zoom !== 'undefined'){
+        camZoomSupported = true;
+        camZoomMin = Number(caps.zoom.min ?? 1);
+        camZoomMax = Number(caps.zoom.max ?? 1);
+        camZoomStep = Number(caps.zoom.step ?? 0.25);
+        currentCamZoom = Number(settings.zoom ?? camZoomMin);
+      }
+    }
+    updateCameraButtons();
+  }
+
   async function startCamera(){
     stopCamera();
     try{
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio:false,
-        video:{ facingMode:{ ideal:'environment' }, width:{ ideal:1920 }, height:{ ideal:1080 } }
-      });
+      const videoConstraints = {
+        width:{ ideal: landscapeMode ? 2560 : 1920 },
+        height:{ ideal: landscapeMode ? 1440 : 1080 }
+      };
+      if(landscapeMode) videoConstraints.aspectRatio = { ideal: 16/9 };
+      if(currentDeviceId) videoConstraints.deviceId = { exact: currentDeviceId };
+      else videoConstraints.facingMode = { ideal:'environment' };
+
+      stream = await navigator.mediaDevices.getUserMedia({ audio:false, video: videoConstraints });
       video.srcObject = stream;
       await video.play();
       errorBox.classList.add('is-hidden');
+      await discoverVideoDevices();
+      await refreshTrackCapabilities();
+      if(wideMode && !wideRearDeviceId && camZoomSupported){
+        await setCameraZoom(camZoomMin, true);
+      }
     } catch(err){
       errorBox.innerHTML = '<b>Kamera açılamadı.</b><br>HTTPS bağlantısını ve kamera iznini kontrol edin.';
       errorBox.classList.remove('is-hidden');
     }
   }
 
-  function stopCamera(){ if(stream) stream.getTracks().forEach(t => t.stop()); stream = null; }
+  function stopCamera(){
+    if(stream) stream.getTracks().forEach(t => t.stop());
+    stream = null;
+    cameraTrack = null;
+  }
+
   function setAnchorPosition(x,y){ anchor.style.left = `${x}px`; anchor.style.top = `${y}px`; }
   function visibleLayer(){ return activeLayer === 'A' ? mascotA : mascotB; }
 
@@ -92,22 +153,17 @@
     });
   }
 
-  function clearShotTimers(){
-    shotTimers.forEach(clearTimeout);
-    shotTimers=[];
-  }
+  function clearShotTimers(){ shotTimers.forEach(clearTimeout); shotTimers = []; }
 
   function playShots(shots, segmentDurationMs){
     clearShotTimers();
     if(!shots || !shots.length) return;
     crossfadeFrame(shots[0]);
-    if(shots.length===1) return;
-
-    // Keep each pose on screen significantly longer for a calmer cinematic feel.
+    if(shots.length === 1) return;
     const safeStep = Math.max(2400, Math.floor(segmentDurationMs / shots.length));
     for(let i=1;i<shots.length;i++){
-      const t=Math.min(segmentDurationMs-700, safeStep*i);
-      shotTimers.push(setTimeout(()=>crossfadeFrame(shots[i]), t));
+      const t = Math.min(segmentDurationMs - 700, safeStep * i);
+      shotTimers.push(setTimeout(() => crossfadeFrame(shots[i]), t));
     }
   }
 
@@ -128,7 +184,6 @@
     anchor.dataset.mood = 'quiet';
     anchor.dataset.ai = 'off';
     crossfadeFrame(groups.calm[0]);
-
     const idleCycle = () => {
       if(!placed || (!narration.paused && !narration.ended)) return;
       quietTimer = setTimeout(() => {
@@ -139,7 +194,7 @@
             crossfadeFrame(groups.calm[2]);
             quietTimer = setTimeout(() => {
               crossfadeFrame(groups.calm[0]);
-              quietTimer = setTimeout(idleCycle, 7200);
+              quietTimer = setTimeout(idleCycle, 9200);
             }, 1600);
           }, 7600);
         }, 1400);
@@ -159,7 +214,7 @@
     }
   }
 
-  async function playNarration(fromStart = false){
+  async function playNarration(fromStart=false){
     if(!placed) return;
     clearTimeout(quietTimer);
     clearShotTimers();
@@ -177,7 +232,7 @@
     if(placed) return;
     placed = true;
     guide.classList.add('is-hidden');
-    setAnchorPosition(x, y);
+    setAnchorPosition(x,y);
     anchor.classList.remove('is-hidden');
     anchor.classList.add('is-placed');
     anchor.style.setProperty('--scale', scale.toFixed(2));
@@ -190,7 +245,7 @@
     const cw = innerWidth, ch = innerHeight;
     const s = Math.max(cw / vw, ch / vh);
     const drawW = vw * s, drawH = vh * s;
-    return { dx:(cw-drawW)/2, dy:(ch-drawH)/2, drawW, drawH, cw, ch };
+    return { dx:(cw - drawW)/2, dy:(ch - drawH)/2, drawW, drawH, cw, ch };
   }
 
   function finaliseCaptureWithLogo(ctx, cw, ch){
@@ -244,8 +299,6 @@
 
     const img = visibleLayer();
     const imgRect = img.getBoundingClientRect();
-    const anchorRect = anchor.getBoundingClientRect();
-
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,.34)';
     ctx.shadowBlur = 28;
@@ -259,11 +312,11 @@
   async function shareCapturedPhoto(){
     if(!capturedBlob) return;
     const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
-    try {
-      if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })) {
+    try{
+      if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
         await navigator.share({ files:[file], title:'Kaplanlar Dijital Dönüşüm Yolculuğu', text:'Kaplanlar AR deneyimi' });
       }
-    } catch(err) {
+    } catch(err){
       if(err && err.name !== 'AbortError') showToast('Paylaşım açılamadı');
     }
   }
@@ -273,7 +326,66 @@
   function setScale(nextScale){
     scale = Math.min(1.48, Math.max(.68, nextScale));
     anchor.style.setProperty('--scale', scale.toFixed(2));
-    showToast(`Boyut: %${Math.round(scale * 100)}`);
+    showToast(`Maskot boyutu: %${Math.round(scale * 100)}`);
+  }
+
+  async function setCameraZoom(nextZoom, silent=false){
+    if(!camZoomSupported || !cameraTrack){ if(!silent) showToast('Bu cihazda kamera zoom desteklenmiyor'); return; }
+    const clamped = Math.min(camZoomMax, Math.max(camZoomMin, nextZoom));
+    try{
+      await cameraTrack.applyConstraints({ advanced:[{ zoom: clamped }] });
+      currentCamZoom = clamped;
+      updateCameraButtons();
+      if(!silent) showToast(`Kamera: ${currentCamZoom.toFixed(1)}x`);
+    } catch(e){
+      if(!silent) showToast('Kamera zoom uygulanamadı');
+    }
+  }
+
+  async function toggleWideMode(){
+    wideMode = !wideMode;
+    if(wideMode){
+      if(wideRearDeviceId){
+        currentDeviceId = wideRearDeviceId;
+        await startCamera();
+        showToast('Geniş açı açıldı');
+      } else if(camZoomSupported){
+        await setCameraZoom(camZoomMin);
+        showToast('Geniş görünüm için minimum zoom kullanıldı');
+      } else {
+        showToast('Bu cihazda geniş açı bulunamadı');
+        wideMode = false;
+      }
+    } else {
+      currentDeviceId = defaultRearDeviceId || currentDeviceId;
+      await startCamera();
+      showToast('Standart açıya dönüldü');
+    }
+    updateCameraButtons();
+  }
+
+  async function toggleLandscapeMode(){
+    landscapeMode = !landscapeMode;
+    document.body.classList.toggle('landscape-preferred', landscapeMode);
+    try {
+      if(landscapeMode){
+        if(document.documentElement.requestFullscreen && !document.fullscreenElement){
+          await document.documentElement.requestFullscreen();
+        }
+        if(screen.orientation && screen.orientation.lock){
+          await screen.orientation.lock('landscape');
+        }
+        showToast('Yatay mod açıldı — telefonu yatay çevirin');
+      } else {
+        if(screen.orientation && screen.orientation.unlock){ screen.orientation.unlock(); }
+        if(document.fullscreenElement && document.exitFullscreen){ await document.exitFullscreen(); }
+        showToast('Yatay mod kapatıldı');
+      }
+    } catch(e){
+      showToast(landscapeMode ? 'Yatay mod istendi — telefonu yatay çevirin' : 'Yatay mod kapatıldı');
+    }
+    await startCamera();
+    updateCameraButtons();
   }
 
   startBtn.addEventListener('click', async() => {
@@ -288,16 +400,12 @@
     if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin');
   });
   photoBtn.addEventListener('click', capturePhoto);
-  zoomInBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    if(!placed){ showToast('Önce maskotu yerleştirin'); return; }
-    setScale(scale + .10);
-  });
-  zoomOutBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    if(!placed){ showToast('Önce maskotu yerleştirin'); return; }
-    setScale(scale - .10);
-  });
+  zoomInBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale + .10); });
+  zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale - .10); });
+  camZoomInBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(currentCamZoom + camZoomStep); });
+  camZoomOutBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(currentCamZoom - camZoomStep); });
+  wideBtn?.addEventListener('click', e => { e.stopPropagation(); toggleWideMode(); });
+  landscapeBtn?.addEventListener('click', e => { e.stopPropagation(); toggleLandscapeMode(); });
   sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
   closePreviewBtn.addEventListener('click', closePhotoPreview);
   photoPreview.addEventListener('click', e => { if(e.target === photoPreview) closePhotoPreview(); });
@@ -334,7 +442,7 @@
   anchor.addEventListener('pointerup', endDrag);
   anchor.addEventListener('pointercancel', endDrag);
 
-  const distance = (a,b) => Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+  const distance = (a,b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   arView.addEventListener('touchstart', e => { if(e.touches.length === 2 && placed) pinchDistance = distance(e.touches[0], e.touches[1]); }, { passive:true });
   arView.addEventListener('touchmove', e => {
     if(e.touches.length === 2 && pinchDistance && placed){
