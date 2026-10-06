@@ -1714,3 +1714,212 @@ body.landscape-preferred .placement-guide{
     font-size:14px !important;
   }
 }
+
+
+/* V39 — cleaner intro and CTA */
+.intro-topbar,
+.intro-mini-badge,
+.intro-mascot-badge,
+.intro-description {
+  display:none !important;
+}
+
+.intro-overlay-shell {
+  justify-content:center !important;
+  padding:calc(24px + env(safe-area-inset-top)) 28px calc(28px + env(safe-area-inset-bottom)) !important;
+}
+.intro-hero-grid--clean {
+  grid-template-columns:minmax(0, 1fr) minmax(260px, 360px) !important;
+  align-items:center !important;
+  gap:34px !important;
+  width:100% !important;
+  max-width:1180px !important;
+  margin:0 auto !important;
+  padding-top:0 !important;
+}
+.intro-copy-col--clean {
+  max-width:680px !important;
+  align-self:center !important;
+}
+.intro-visual-col--clean {
+  justify-content:center !important;
+}
+.intro-mascot-stage--clean {
+  min-height:420px !important;
+  width:min(100%, 360px) !important;
+}
+.intro-hero-mascot--clean {
+  width:min(100%, 330px) !important;
+  max-height:430px !important;
+}
+.intro-ribbon {
+  margin:0 !important;
+}
+.intro-action-wrap--clean {
+  margin-top:26px !important;
+}
+.video-start-btn {
+  min-width:230px !important;
+}
+
+/* cleaner AR gate */
+.enter-ar-panel {
+  width:min(92vw, 760px) !important;
+  min-height:auto !important;
+  grid-template-columns:1fr !important;
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  overflow:visible !important;
+}
+.enter-ar-panel::before,
+.enter-ar-visual::after {
+  display:none !important;
+}
+.enter-ar-card-clean {
+  width:100%;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:28px;
+  background:linear-gradient(180deg, rgba(10,13,18,.92) 0%, rgba(10,13,18,.84) 100%);
+  box-shadow:0 28px 70px rgba(0,0,0,.34);
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+  overflow:hidden;
+}
+.enter-ar-card-top {
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  padding:24px 24px 16px 24px;
+}
+.enter-ar-mascot--clean {
+  width:190px !important;
+  max-width:190px !important;
+  max-height:210px !important;
+  justify-self:center;
+}
+.enter-ar-copy--clean {
+  min-width:0;
+  padding:0 !important;
+}
+.enter-ar-copy--clean h2 {
+  margin:0 0 10px !important;
+  font-size:clamp(28px, 3vw, 38px) !important;
+  line-height:1.06 !important;
+}
+.enter-ar-copy--clean p {
+  display:block !important;
+  margin:0 !important;
+  max-width:480px !important;
+  font-size:14px !important;
+  line-height:1.55 !important;
+  color:rgba(255,255,255,.72) !important;
+}
+.enter-ar-card-actions {
+  padding:0 24px 24px 24px;
+}
+.enter-ar-btn--clean {
+  width:100% !important;
+  min-height:56px !important;
+  justify-content:space-between !important;
+  padding:0 18px 0 20px !important;
+  border-radius:16px !important;
+}
+.enter-ar-btn--clean > span:first-child {
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+@media (max-width: 720px) {
+  .intro-overlay-shell {
+    padding:calc(14px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom)) !important;
+  }
+  .intro-hero-grid--clean {
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+    max-width:100% !important;
+  }
+  .intro-visual-col--clean {
+    order:1 !important;
+  }
+  .intro-copy-col--clean {
+    order:2 !important;
+    max-width:none !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+  .intro-mascot-stage--clean {
+    min-height:170px !important;
+    width:100% !important;
+  }
+  .intro-hero-mascot--clean {
+    width:154px !important;
+    max-height:172px !important;
+  }
+  .intro-ribbon {
+    width:100% !important;
+    padding:16px !important;
+    border-radius:18px !important;
+  }
+  .intro-ribbon span {
+    font-size:clamp(24px, 8vw, 34px) !important;
+    line-height:1 !important;
+  }
+  .intro-action-wrap--clean {
+    margin-top:18px !important;
+  }
+  .video-start-btn {
+    width:100% !important;
+    min-width:0 !important;
+  }
+
+  .enter-ar-panel {
+    width:min(92vw, 390px) !important;
+    bottom:calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+  .enter-ar-card-clean {
+    border-radius:22px !important;
+  }
+  .enter-ar-card-top {
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+    padding:16px 16px 10px 16px !important;
+    text-align:left !important;
+  }
+  .enter-ar-mascot--clean {
+    width:132px !important;
+    max-width:132px !important;
+    max-height:138px !important;
+    margin:0 auto 4px auto !important;
+  }
+  .enter-ar-copy--clean h2 {
+    font-size:22px !important;
+    line-height:1.08 !important;
+    margin-bottom:8px !important;
+  }
+  .enter-ar-copy--clean p {
+    font-size:12px !important;
+    line-height:1.45 !important;
+  }
+  .enter-ar-card-actions {
+    padding:0 16px 16px 16px !important;
+  }
+  .enter-ar-btn--clean {
+    min-height:48px !important;
+    border-radius:14px !important;
+    padding:0 12px 0 14px !important;
+    gap:10px !important;
+  }
+  .enter-ar-btn--clean > span:first-child {
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    line-height:1.2 !important;
+    text-align:left !important;
+  }
+}

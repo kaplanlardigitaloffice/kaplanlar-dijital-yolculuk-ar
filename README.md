@@ -1,8 +1,8 @@
-# Kaplanlar WebAR V38 — Executive Mascot Intro
+# Kaplanlar WebAR V39 — Clean Intro CTA
 
 Bu sürümde:
-- giriş ekranında logo yerine maskot odaklı daha premium bir sunum kullanıldı
-- video intro alanı split hero yapıya geçirildi
-- mobil görünümde giriş ekranı daha dengeli hale getirildi
-- Artırılmış Gerçekliği Dene paneli masaüstü ve mobil için yeniden düzenlendi
-- mobil CTA alanındaki üst üste binme ve taşma sorunları giderildi
+- giriş sayfasındaki üstteki iki kutu tamamen kaldırıldı
+- giriş ekranı sadeleştirildi: yalnızca banner, maskot ve başlat butonu kaldı
+- Artırılmış Gerçekliği Dene ekranı baştan sadeleştirildi
+- iç içe geçmiş görünüm azaltıldı, daha temiz tek kart yapısına geçirildi
+- mobil UX için CTA ve metin akışı yeniden düzenlendi
