@@ -1,3 +1,3 @@
-// V46: intentionally no caching.
+// V47: no cache interception.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));

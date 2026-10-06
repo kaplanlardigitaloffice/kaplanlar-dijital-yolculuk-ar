@@ -2514,3 +2514,60 @@ body.landscape-preferred .placement-guide{
 #launchVideo{
   pointer-events:auto;
 }
+
+
+/* V47 — direct onclick + cleaner cover */
+.v40-cover-inner{
+  grid-template-columns:minmax(0,760px) !important;
+  justify-content:start !important;
+  max-width:1180px !important;
+}
+.v40-cover-copy{
+  max-width:720px !important;
+}
+.v40-cover-visual{
+  display:none !important;
+}
+#videoStartBtn{
+  position:relative !important;
+  z-index:100 !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  cursor:pointer !important;
+}
+.v40-cover{
+  pointer-events:auto !important;
+}
+#launchVideo{
+  pointer-events:none;
+}
+.video-fallback-play{
+  z-index:120 !important;
+  pointer-events:auto !important;
+}
+
+@media(max-width:720px){
+  .v40-cover{
+    justify-content:flex-end !important;
+    padding:
+      calc(18px + env(safe-area-inset-top))
+      16px
+      calc(34px + env(safe-area-inset-bottom)) !important;
+  }
+  .v40-cover-inner{
+    display:block !important;
+    width:100% !important;
+  }
+  .v40-title{
+    font-size:clamp(38px,12vw,54px) !important;
+    max-width:330px;
+  }
+  .v40-lead{
+    max-width:340px;
+    margin-top:12px !important;
+  }
+  .v40-primary-btn{
+    width:100% !important;
+    margin-top:18px !important;
+  }
+}

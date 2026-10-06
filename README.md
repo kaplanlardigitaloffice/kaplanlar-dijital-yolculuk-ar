@@ -1,9 +1,10 @@
-# Kaplanlar WebAR V46 — Direct Launch
+# Kaplanlar WebAR V47 — Direct Onclick
 
-Bu sürümde ana sayfadaki video başlatma, app.js'den bağımsız hale getirildi.
+Bu sürümde video başlatma için event listener zinciri tamamen kaldırıldı.
 
-- “Deneyimi Başlat” butonu doğrudan index.html içindeki küçük inline controller ile çalışır.
-- app.js yüklenmese veya cache problemi yaşansa bile kapak kapanır ve video oynatma denenir.
-- Önce sesli, sonra sessiz oynatma denenir.
-- Son fallback olarak native video kontrolleri görünür.
-- Video bitince AR geçiş ekranı doğrudan açılır.
+- Ana butonda doğrudan HTML `onclick` kullanılır.
+- Başlatma fonksiyonu `<head>` içinde global olarak tanımlıdır.
+- `app.js` video başlatma işine artık karışmaz.
+- Kapaktaki ikinci maskot kaldırıldı; videodaki ana maskot görüntüsü kullanılır.
+- Mobil kapak daha temiz ve tek kolonlu hale getirildi.
+- Sesli -> sessiz -> native controls fallback sırası korunur.

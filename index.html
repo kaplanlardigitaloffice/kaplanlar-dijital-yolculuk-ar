@@ -6,16 +6,113 @@
   <meta name="theme-color" content="#070a0f" />
   <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=46" />
+  <link rel="stylesheet" href="styles.css?v=47" />
+
+  <script>
+    window.kaplanlarStart = async function (ev) {
+      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+
+      var video = document.getElementById('launchVideo');
+      var cover = document.getElementById('introOverlay');
+      var shade = document.querySelector('.video-shade');
+      var fallback = document.getElementById('videoFallbackPlay');
+
+      if (!video) return false;
+
+      /* UI transition happens synchronously from the tap. */
+      if (cover) {
+        cover.style.setProperty('display', 'none', 'important');
+        cover.style.setProperty('pointer-events', 'none', 'important');
+      }
+      if (shade) {
+        shade.style.setProperty('opacity', '0', 'important');
+        shade.style.setProperty('pointer-events', 'none', 'important');
+      }
+
+      video.style.setProperty('z-index', '10', 'important');
+      video.style.setProperty('pointer-events', 'auto', 'important');
+      video.playsInline = true;
+      video.controls = false;
+
+      try { video.pause(); } catch (_) {}
+      try { video.currentTime = 0; } catch (_) {}
+
+      /* 1) audible playback from explicit user gesture */
+      try {
+        video.muted = false;
+        video.volume = 1;
+        await video.play();
+        if (fallback) fallback.classList.add('is-hidden');
+        return false;
+      } catch (_) {}
+
+      /* 2) muted fallback */
+      try {
+        video.muted = true;
+        await video.play();
+        if (fallback) fallback.classList.add('is-hidden');
+        return false;
+      } catch (_) {}
+
+      /* 3) native controls + explicit second play target */
+      video.controls = true;
+      if (fallback) {
+        fallback.classList.remove('is-hidden');
+        fallback.style.display = 'flex';
+      }
+      return false;
+    };
+
+    window.kaplanlarFallback = async function (ev) {
+      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+      var video = document.getElementById('launchVideo');
+      var fallback = document.getElementById('videoFallbackPlay');
+      if (!video) return false;
+
+      try {
+        video.muted = false;
+        await video.play();
+        video.controls = false;
+        if (fallback) fallback.classList.add('is-hidden');
+        return false;
+      } catch (_) {}
+
+      try {
+        video.muted = true;
+        await video.play();
+        video.controls = false;
+        if (fallback) fallback.classList.add('is-hidden');
+      } catch (_) {
+        video.controls = true;
+      }
+      return false;
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var video = document.getElementById('launchVideo');
+      if (!video) return;
+
+      video.addEventListener('ended', function () {
+        var gateway = document.getElementById('enterArPanel');
+        if (gateway) {
+          gateway.classList.remove('is-hidden');
+          requestAnimationFrame(function () {
+            gateway.classList.add('is-ready');
+          });
+        }
+      });
+    });
+  </script>
+
 </head>
 <body>
   <main id="app">
     <section id="intro" class="screen video-intro">
       <video id="launchVideo" class="launch-video" playsinline preload="auto" webkit-playsinline>
-        <source src="assets/launch_video.mp4" type="video/mp4" />
+        <source src="assets/launch_video.mp4?v=47" type="video/mp4" />
       </video>
       <div class="video-shade"></div>
-      <button id="videoFallbackPlay" type="button" class="video-fallback-play is-hidden" aria-label="Videoyu oynat">
+      <button id="videoFallbackPlay" type="button" class="video-fallback-play is-hidden" aria-label="Videoyu oynat" onclick="return window.kaplanlarFallback(event);">
         <span class="v44-fallback-icon"></span>
         <span>Videoyu Oynat</span>
       </button>
@@ -30,7 +127,7 @@
             </h1>
             <p class="v40-lead">Yeni çalışma biçimlerini, yapay zekâyı ve artırılmış gerçekliği tek bir deneyimde keşfet.</p>
 
-            <button id="videoStartBtn" type="button" class="v40-primary-btn" aria-label="Videoyu başlat">
+            <button id="videoStartBtn" type="button" class="v40-primary-btn" aria-label="Videoyu başlat" onclick="return window.kaplanlarStart(event);">
               <span class="v40-play" aria-hidden="true"></span>
               <span class="v40-primary-label">
                 <strong>Deneyimi Başlat</strong>
@@ -38,11 +135,6 @@
               </span>
             </button>
             <div id="introPlayStatus" class="intro-play-status is-hidden" aria-live="polite"></div>
-          </div>
-
-          <div class="v40-cover-visual" aria-hidden="true">
-            <div class="v40-visual-glow"></div>
-            <img src="assets/cta_mascot.png" alt="" class="v40-cover-mascot" />
           </div>
         </div>
 
@@ -147,96 +239,6 @@
       <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
-
-  <script>
-  (function () {
-    function byId(id){ return document.getElementById(id); }
-
-    function setupDirectLaunch(){
-      var btn = byId('videoStartBtn');
-      var video = byId('launchVideo');
-      var cover = byId('introOverlay');
-      var shade = document.querySelector('.video-shade');
-      var fallback = byId('videoFallbackPlay');
-
-      if(!btn || !video || !cover) return;
-
-      function showVideo(){
-        cover.style.display = 'none';
-        cover.style.pointerEvents = 'none';
-        if(shade){
-          shade.style.opacity = '0';
-          shade.style.pointerEvents = 'none';
-        }
-        video.style.zIndex = '5';
-        video.style.pointerEvents = 'auto';
-      }
-
-      async function playNow(){
-        showVideo();
-
-        try{
-          video.controls = false;
-          video.currentTime = 0;
-          video.muted = false;
-          video.volume = 1;
-          await video.play();
-          if(fallback) fallback.style.display = 'none';
-          return;
-        }catch(e){}
-
-        try{
-          video.muted = true;
-          await video.play();
-          if(fallback) fallback.style.display = 'none';
-          return;
-        }catch(e){}
-
-        video.controls = true;
-        if(fallback){
-          fallback.classList.remove('is-hidden');
-          fallback.style.display = 'flex';
-        }
-      }
-
-      // Use an inline DOM property handler so this works even if app.js fails.
-      btn.onclick = function(ev){
-        if(ev){
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-        playNow();
-        return false;
-      };
-
-      if(fallback){
-        fallback.onclick = function(ev){
-          if(ev){
-            ev.preventDefault();
-            ev.stopPropagation();
-          }
-          playNow();
-          return false;
-        };
-      }
-
-      video.addEventListener('ended', function(){
-        var gateway = byId('enterArPanel');
-        if(gateway){
-          gateway.classList.remove('is-hidden');
-          gateway.classList.add('is-ready');
-        }
-      });
-    }
-
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', setupDirectLaunch, {once:true});
-    }else{
-      setupDirectLaunch();
-    }
-  })();
-  </script>
-
-  <script src="app.js?v=46"></script>
+  <script src="app.js?v=47"></script>
 </body>
 </html>
