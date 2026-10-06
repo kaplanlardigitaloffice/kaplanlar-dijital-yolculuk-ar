@@ -3,7 +3,7 @@
 
   const intro = $('#intro'), arView = $('#arView');
   const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo'), videoShade = $('.video-shade');
-  const videoStartBtn = $('#videoStartBtn'), introPlayStatus = $('#introPlayStatus'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
+  const videoStartBtn = $('#videoStartBtn'), videoFallbackPlay = $('#videoFallbackPlay'), introPlayStatus = $('#introPlayStatus'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
@@ -221,72 +221,115 @@
     introPlayStatus.classList.toggle('is-hidden', !message);
   }
 
-  async function startLaunchExperience(){
-    if(launchStarting) return;
-    launchStarting = true;
+  function enterVideoMode(){
+    // Never leave the user stuck on the cover after pressing the main CTA.
+    introOverlay?.classList.add('is-hidden');
+    introBanner?.classList.add('is-hidden');
+    videoShade?.classList.add('is-playing');
+    setIntroPlayStatus('');
+  }
 
+  async function playLaunchVideoFromGesture(){
+    launchVideo.currentTime = 0;
+    launchVideo.playsInline = true;
+
+    // First attempt: audible playback from the explicit user gesture.
+    try{
+      launchVideo.muted = false;
+      launchVideo.volume = 1;
+      await launchVideo.play();
+      return true;
+    }catch(e){}
+
+    // Second attempt: muted, which is accepted by stricter mobile browsers.
+    try{
+      launchVideo.muted = true;
+      await launchVideo.play();
+      return true;
+    }catch(e){}
+
+    return false;
+  }
+
+  async function startLaunchExperience(e){
+    if(e){
+      e.preventDefault?.();
+      e.stopPropagation?.();
+    }
+    if(launchStarting) return;
+
+    launchStarting = true;
     videoStartBtn.disabled = true;
     videoStartBtn.classList.add('is-loading');
-    setIntroPlayStatus('Video hazırlanıyor…');
 
+    // The screen changes immediately on tap. Playback failure no longer traps
+    // the user on the landing page.
+    enterVideoMode();
+
+    const started = await playLaunchVideoFromGesture();
+
+    if(!started){
+      // Browser-specific fallback: expose the video's native controls and a
+      // second direct play target over the video.
+      launchVideo.controls = true;
+      videoFallbackPlay?.classList.remove('is-hidden');
+    }else{
+      launchVideo.controls = false;
+      videoFallbackPlay?.classList.add('is-hidden');
+    }
+
+    launchStarting = false;
+    videoStartBtn.disabled = false;
+    videoStartBtn.classList.remove('is-loading');
+  }
+
+  async function fallbackPlay(e){
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    let started = false;
     try{
-      launchVideo.pause();
-      launchVideo.currentTime = 0;
-
-      // Some mobile browsers need load() after navigation/cache refresh.
-      if(launchVideo.readyState < 2){
-        try { launchVideo.load(); } catch(e) {}
-      }
-
-      let started = false;
-
-      // First try with sound because this function runs directly from a user gesture.
+      launchVideo.muted = false;
+      await launchVideo.play();
+      started = true;
+    }catch(e1){
       try{
-        launchVideo.muted = false;
-        launchVideo.volume = 1;
+        launchVideo.muted = true;
         await launchVideo.play();
-        started = !launchVideo.paused;
-      }catch(firstErr){}
+        started = true;
+      }catch(e2){}
+    }
 
-      // Fallback for stricter browser autoplay/audio policies.
-      if(!started){
-        try{
-          launchVideo.muted = true;
-          await launchVideo.play();
-          started = !launchVideo.paused;
-        }catch(secondErr){}
-      }
-
-      if(!started){
-        throw new Error('VIDEO_PLAY_FAILED');
-      }
-
-      // Only remove the cover after playback genuinely started.
-      introOverlay?.classList.add('is-hidden');
-      introBanner?.classList.add('is-hidden');
-      videoShade?.classList.add('is-playing');
-      setIntroPlayStatus('');
-
-    }catch(err){
-      // Keep cover visible so the user is never left on a dead screen.
-      introOverlay?.classList.remove('is-hidden');
-      introBanner?.classList.remove('is-hidden');
-      videoShade?.classList.remove('is-playing');
-      setIntroPlayStatus('Video başlatılamadı. Tekrar deneyin.');
-    }finally{
-      launchStarting = false;
-      videoStartBtn.disabled = false;
-      videoStartBtn.classList.remove('is-loading');
+    if(started){
+      launchVideo.controls = false;
+      videoFallbackPlay?.classList.add('is-hidden');
+    }else{
+      launchVideo.controls = true;
     }
   }
 
-  videoStartBtn?.addEventListener('click', startLaunchExperience);
-  videoStartBtn?.addEventListener('touchend', (e) => {
-    // iOS fallback: ensure a direct touch gesture can start media.
-    if(launchStarting || !launchVideo.paused) return;
-    e.preventDefault();
-    startLaunchExperience();
-  }, { passive:false });
+  // Pointerup works consistently across mouse, Android Chrome and iOS Safari.
+  videoStartBtn?.addEventListener('pointerup', startLaunchExperience);
+  // Keyboard accessibility / browsers without pointer events.
+  videoStartBtn?.addEventListener('click', (e) => {
+    if(e.detail === 0) startLaunchExperience(e);
+  });
+  videoFallbackPlay?.addEventListener('pointerup', fallbackPlay);
+  videoFallbackPlay?.addEventListener('click', (e) => {
+    if(e.detail === 0) fallbackPlay(e);
+  });
+
+  launchVideo.addEventListener('playing', () => {
+    videoFallbackPlay?.classList.add('is-hidden');
+    launchVideo.controls = false;
+  });
+
+  launchVideo.addEventListener('error', () => {
+    // If media loading itself fails, still expose native controls for a clear
+    // recoverable UI instead of silently returning to the cover.
+    launchVideo.controls = true;
+    videoFallbackPlay?.classList.remove('is-hidden');
+  });
 
   launchVideo.addEventListener('ended', () => {
     enterArPanel.classList.remove('is-hidden');

@@ -2440,3 +2440,51 @@ body.landscape-preferred .placement-guide{
 .v40-cover-mascot{
   pointer-events:none !important;
 }
+
+
+/* V44 — launch hard-fix */
+.video-fallback-play{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:30;
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 20px 8px 10px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  background:rgba(8,11,16,.72);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  color:#fff;
+  font-size:14px;
+  font-weight:800;
+  box-shadow:0 20px 52px rgba(0,0,0,.38);
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+.v44-fallback-icon{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:#d71936;
+  position:relative;
+  flex:0 0 42px;
+}
+.v44-fallback-icon::after{
+  content:'';
+  position:absolute;
+  left:17px;
+  top:13px;
+  width:0;
+  height:0;
+  border-top:8px solid transparent;
+  border-bottom:8px solid transparent;
+  border-left:12px solid #fff;
+}
+#launchVideo[controls]{
+  z-index:2;
+}

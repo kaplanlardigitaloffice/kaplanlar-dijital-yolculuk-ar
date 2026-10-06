@@ -1,8 +1,9 @@
-# Kaplanlar WebAR V43 — Start Button Fix
+# Kaplanlar WebAR V44 — Launch Hard Fix
 
-Düzeltme:
-- “Deneyimi Başlat” butonuna mobil touch fallback eklendi
-- video gerçekten başlamadan kapak artık gizlenmiyor
-- sesli oynatma engellenirse sessiz fallback devreye giriyor
-- video hiç başlayamazsa kullanıcı boş ekranda kalmıyor, hata mesajı gösteriliyor
-- CTA'nın başka katmanlar tarafından tıklanmasının engellenmesi önlendi
+Bu sürüm özellikle ana ekrandaki “Deneyimi Başlat” problemini hedefler.
+
+- Butona dokunulduğu anda landing cover kapanır ve video moduna geçilir.
+- Video oynatma ilk olarak sesli, sonra sessiz denenir.
+- Tarayıcı yine engellerse videonun üzerinde ikinci doğrudan “Videoyu Oynat” butonu çıkar.
+- Ek olarak native video controls görünür hale gelir.
+- Kullanıcı artık başarısız play() nedeniyle ana sayfada kilitli kalmaz.
