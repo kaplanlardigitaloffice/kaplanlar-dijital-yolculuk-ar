@@ -2406,3 +2406,37 @@ body.landscape-preferred .placement-guide{
   font-size:11px !important;
   line-height:1.45 !important;
 }
+
+
+/* V43 — reliable launch button interaction */
+#videoStartBtn.v40-primary-btn{
+  position:relative !important;
+  z-index:20 !important;
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#videoStartBtn.v40-primary-btn:disabled{
+  opacity:.78;
+  cursor:wait;
+}
+#videoStartBtn.v40-primary-btn.is-loading .v40-play{
+  animation:v43LaunchPulse .9s ease-in-out infinite alternate;
+}
+@keyframes v43LaunchPulse{
+  from{transform:scale(.94);opacity:.72}
+  to{transform:scale(1);opacity:1}
+}
+.intro-play-status{
+  margin-top:10px;
+  color:rgba(255,255,255,.72);
+  font-size:11px;
+  line-height:1.4;
+}
+.v40-cover-visual,
+.v40-visual-glow,
+.v40-cover-mascot{
+  pointer-events:none !important;
+}

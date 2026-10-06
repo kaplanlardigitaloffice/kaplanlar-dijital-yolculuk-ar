@@ -3,7 +3,7 @@
 
   const intro = $('#intro'), arView = $('#arView');
   const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo'), videoShade = $('.video-shade');
-  const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
+  const videoStartBtn = $('#videoStartBtn'), introPlayStatus = $('#introPlayStatus'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
@@ -213,21 +213,80 @@
     await startCamera();
   }
 
-  videoStartBtn.addEventListener('click', async () => {
-    introOverlay?.classList.add('is-hidden');
-    introBanner?.classList.add('is-hidden');
-    videoShade?.classList.add('is-playing');
-    videoStartBtn.classList.add('is-hidden');
-    launchVideo.currentTime = 0;
+  let launchStarting = false;
+
+  function setIntroPlayStatus(message=''){
+    if(!introPlayStatus) return;
+    introPlayStatus.textContent = message;
+    introPlayStatus.classList.toggle('is-hidden', !message);
+  }
+
+  async function startLaunchExperience(){
+    if(launchStarting) return;
+    launchStarting = true;
+
+    videoStartBtn.disabled = true;
+    videoStartBtn.classList.add('is-loading');
+    setIntroPlayStatus('Video hazırlanıyor…');
+
     try{
-      launchVideo.muted = false;
-      await launchVideo.play();
-    } catch(err){
-      launchVideo.muted = true;
-      try { await launchVideo.play(); } catch(e) {}
-      showToast('Tarayıcı sesi engelledi; video sessiz devam ediyor');
+      launchVideo.pause();
+      launchVideo.currentTime = 0;
+
+      // Some mobile browsers need load() after navigation/cache refresh.
+      if(launchVideo.readyState < 2){
+        try { launchVideo.load(); } catch(e) {}
+      }
+
+      let started = false;
+
+      // First try with sound because this function runs directly from a user gesture.
+      try{
+        launchVideo.muted = false;
+        launchVideo.volume = 1;
+        await launchVideo.play();
+        started = !launchVideo.paused;
+      }catch(firstErr){}
+
+      // Fallback for stricter browser autoplay/audio policies.
+      if(!started){
+        try{
+          launchVideo.muted = true;
+          await launchVideo.play();
+          started = !launchVideo.paused;
+        }catch(secondErr){}
+      }
+
+      if(!started){
+        throw new Error('VIDEO_PLAY_FAILED');
+      }
+
+      // Only remove the cover after playback genuinely started.
+      introOverlay?.classList.add('is-hidden');
+      introBanner?.classList.add('is-hidden');
+      videoShade?.classList.add('is-playing');
+      setIntroPlayStatus('');
+
+    }catch(err){
+      // Keep cover visible so the user is never left on a dead screen.
+      introOverlay?.classList.remove('is-hidden');
+      introBanner?.classList.remove('is-hidden');
+      videoShade?.classList.remove('is-playing');
+      setIntroPlayStatus('Video başlatılamadı. Tekrar deneyin.');
+    }finally{
+      launchStarting = false;
+      videoStartBtn.disabled = false;
+      videoStartBtn.classList.remove('is-loading');
     }
-  });
+  }
+
+  videoStartBtn?.addEventListener('click', startLaunchExperience);
+  videoStartBtn?.addEventListener('touchend', (e) => {
+    // iOS fallback: ensure a direct touch gesture can start media.
+    if(launchStarting || !launchVideo.paused) return;
+    e.preventDefault();
+    startLaunchExperience();
+  }, { passive:false });
 
   launchVideo.addEventListener('ended', () => {
     enterArPanel.classList.remove('is-hidden');

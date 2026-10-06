@@ -1,10 +1,8 @@
-# Kaplanlar WebAR V42 — Save Flow
+# Kaplanlar WebAR V43 — Start Button Fix
 
-Bu sürümde fotoğraf kaydetme akışı güçlendirildi:
-- iOS/Android'de önce native paylaşım menüsü açılır
-- iOS'ta “Görüntüyü Kaydet”
-- Android'de Google Fotoğraflar / Galeri seçimi
-- file-share desteklenmezse fotoğraf yeni sekmede açılır ve basılı tutarak kaydetme fallback'i sağlanır
-- masaüstünde normal dosya indirme fallback'i kullanılır
-
-Not: Normal mobil web sayfaları iOS/Android galeriye kullanıcı onayı olmadan doğrudan yazamaz.
+Düzeltme:
+- “Deneyimi Başlat” butonuna mobil touch fallback eklendi
+- video gerçekten başlamadan kapak artık gizlenmiyor
+- sesli oynatma engellenirse sessiz fallback devreye giriyor
+- video hiç başlayamazsa kullanıcı boş ekranda kalmıyor, hata mesajı gösteriliyor
+- CTA'nın başka katmanlar tarafından tıklanmasının engellenmesi önlendi
