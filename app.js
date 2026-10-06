@@ -6,7 +6,7 @@
   const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
-  const quickPhotoBtn = $('#quickPhotoBtn'), mascotTrack = $('#mascotTrack');
+  const quickPhotoBtn = $('#quickPhotoBtn'), mascotTrack = $('#mascotTrack'), refreshMascotsBtn = $('#refreshMascotsBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
   const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn');
@@ -217,6 +217,16 @@
     showToast('Maskotu seçin ve yerleştirmek için ekrana dokunun');
   });
 
+  refreshMascotsBtn?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    refreshMascotsBtn.disabled = true;
+    refreshMascotsBtn.textContent = 'Yükleniyor';
+    await loadMascotOptions();
+    refreshMascotsBtn.textContent = 'Yenile';
+    refreshMascotsBtn.disabled = false;
+    showToast(`${mascotOptions.length} maskot bulundu`);
+  });
+
   enterArBtn?.addEventListener('click', openArExperience);
 
   async function placeMascot(x,y){
@@ -243,9 +253,49 @@
   }
 
 
+  const MASCOT_REPO_API =
+    'https://api.github.com/repos/kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar/contents/assets';
+
+  async function discoverMascotsFromGitHub(){
+    try{
+      const res = await fetch(MASCOT_REPO_API + '?_=' + Date.now(), {
+        cache:'no-store',
+        headers:{ 'Accept':'application/vnd.github+json' }
+      });
+      if(!res.ok) return [];
+
+      const files = await res.json();
+      if(!Array.isArray(files)) return [];
+
+      return files
+        .filter(file =>
+          file &&
+          file.type === 'file' &&
+          /^(mascot|maskot)[-_].+\.(png|webp|jpe?g)$/i.test(file.name)
+        )
+        .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}))
+        .map(file => ({
+          name:file.name,
+          src:`assets/${encodeURIComponent(file.name)}?v=${String(file.sha || '').slice(0,12)}`
+        }));
+    }catch(e){
+      return [];
+    }
+  }
+
   async function assetExists(src){
     try{
-      const res = await fetch(src, { method:'HEAD', cache:'no-store' });
+      let res = await fetch(src + (src.includes('?') ? '&' : '?') + '_=' + Date.now(), {
+        method:'HEAD',
+        cache:'no-store'
+      });
+      if(res.ok) return true;
+
+      // Some static hosts/proxies are inconsistent with HEAD.
+      res = await fetch(src + (src.includes('?') ? '&' : '?') + '_=' + Date.now(), {
+        method:'GET',
+        cache:'no-store'
+      });
       return res.ok;
     }catch(e){
       return false;
@@ -256,14 +306,18 @@
     if(!mascotTrack) return;
     mascotTrack.innerHTML = '';
 
-    mascotOptions.forEach((src, index) => {
+    mascotOptions.forEach((item, index) => {
+      const src = typeof item === 'string' ? item : item.src;
+      const name = typeof item === 'string' ? `Maskot ${index + 1}` : item.name;
+
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'mascot-option' + (src === selectedMascotSrc ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
-      btn.setAttribute('aria-label', `Maskot ${index + 1}`);
+      btn.setAttribute('aria-label', name);
 
       const img = document.createElement('img');
+      img.crossOrigin = 'anonymous';
       img.src = src;
       img.alt = '';
       img.draggable = false;
@@ -272,8 +326,12 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         selectedMascotSrc = src;
+        mascotA.crossOrigin = 'anonymous';
+        mascotB.crossOrigin = 'anonymous';
         crossfadeFrame(selectedMascotSrc);
-        mascotTrack.querySelectorAll('.mascot-option').forEach(el => el.classList.remove('is-selected'));
+
+        mascotTrack.querySelectorAll('.mascot-option')
+          .forEach(el => el.classList.remove('is-selected'));
         btn.classList.add('is-selected');
       });
 
@@ -282,28 +340,41 @@
   }
 
   async function loadMascotOptions(){
-    const found = [];
-    let misses = 0;
+    // Preferred path: read the live public GitHub assets folder.
+    const githubMascots = await discoverMascotsFromGitHub();
 
-    for(let i=1; i<=30 && misses < 4; i++){
-      const src = `assets/mascot_${String(i).padStart(2,'0')}.png`;
+    if(githubMascots.length){
+      mascotOptions = githubMascots;
+      selectedMascotSrc = githubMascots[0].src;
+      mascotA.crossOrigin = 'anonymous';
+      mascotB.crossOrigin = 'anonymous';
+      crossfadeFrame(selectedMascotSrc);
+      renderMascotPicker();
+      return;
+    }
+
+    // Offline / API fallback: scan the complete numeric convention without
+    // stopping at the first naming gap.
+    const found = [];
+    for(let i=1; i<=60; i++){
+      const name = `mascot_${String(i).padStart(2,'0')}.png`;
+      const src = `assets/${name}`;
       if(await assetExists(src)){
-        found.push(src);
-        misses = 0;
-      }else{
-        misses++;
+        found.push({ name, src });
       }
     }
 
     mascotOptions = found.length ? found : [
-      'assets/mascot_01.png',
-      'assets/mascot_02.png',
-      'assets/mascot_03.png'
+      {name:'mascot_01.png', src:'assets/mascot_01.png'},
+      {name:'mascot_02.png', src:'assets/mascot_02.png'},
+      {name:'mascot_03.png', src:'assets/mascot_03.png'}
     ];
 
-    selectedMascotSrc = mascotOptions[0];
+    selectedMascotSrc = mascotOptions[0].src;
+    crossfadeFrame(selectedMascotSrc);
     renderMascotPicker();
   }
+
 
   async function setCameraZoom(nextZoom){
     const target = Number(nextZoom);

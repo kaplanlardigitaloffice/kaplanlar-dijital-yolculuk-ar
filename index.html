@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070a0f" />
   <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=49" />
+  <link rel="stylesheet" href="styles.css?v=50" />
 </head>
 <body>
   <main id="app">
@@ -92,7 +92,10 @@
       </div>
 
       <div id="mascotPicker" class="mascot-picker" aria-label="Maskot seçimi">
-        <div class="mascot-picker-label">Maskot seç</div>
+        <div class="mascot-picker-head">
+          <div class="mascot-picker-label">Maskot seç</div>
+          <button id="refreshMascotsBtn" type="button" class="mascot-refresh-btn">Yenile</button>
+        </div>
         <div id="mascotTrack" class="mascot-track" role="list"></div>
       </div>
 
@@ -205,6 +208,6 @@
       }
     });
   </script>
-  <script src="app.js?v=49"></script>
+  <script src="app.js?v=50"></script>
 </body>
 </html>

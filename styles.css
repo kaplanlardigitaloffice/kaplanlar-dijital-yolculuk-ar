@@ -2971,3 +2971,31 @@ body.landscape-preferred .placement-guide{
     border-radius:16px;
   }
 }
+
+
+/* V50 — live asset discovery */
+.mascot-picker-head{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:0 auto 8px;
+  pointer-events:auto;
+}
+.mascot-picker-head .mascot-picker-label{
+  margin:0;
+}
+.mascot-refresh-btn{
+  min-height:28px;
+  padding:0 10px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;
+  background:rgba(5,7,11,.48);
+  color:rgba(255,255,255,.72);
+  font-size:10px;
+  font-weight:700;
+  cursor:pointer;
+}
+.mascot-refresh-btn:disabled{
+  opacity:.55;
+}
