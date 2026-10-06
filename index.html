@@ -45,18 +45,25 @@
         </div>
       </div>
 
-      <div class="camera-fab-group">
-        <button id="camZoomOutBtn" class="fab-btn cam-btn" aria-label="Kamerayı uzaklaştır" title="Kamera zoom out">🔎−</button>
-        <button id="camZoomInBtn" class="fab-btn cam-btn" aria-label="Kamerayı yakınlaştır" title="Kamera zoom in">🔎+</button>
-        <button id="wideBtn" class="fab-btn cam-text-btn" aria-label="Geniş açı" title="Geniş açı">0.5x</button>
-        <button id="landscapeBtn" class="fab-btn cam-text-btn" aria-label="Yatay çekim modu" title="Yatay çekim modu">16:9</button>
-      </div>
+      <div class="pro-controls">
+        <div class="control-cluster camera-cluster" aria-label="Kamera kontrolleri">
+          <button id="wideBtn" class="control-btn compact" aria-label="Geniş açı">0.5x</button>
+          <button id="camZoomOutBtn" class="control-btn icon" aria-label="Kamera zoom out">−</button>
+          <span id="cameraZoomLabel" class="zoom-value">1.0x</span>
+          <button id="camZoomInBtn" class="control-btn icon" aria-label="Kamera zoom in">+</button>
+          <button id="landscapeBtn" class="control-btn compact" aria-label="Yatay çekim">16:9</button>
+        </div>
 
-      <div class="fab-group">
-        <button id="zoomOutBtn" class="fab-btn zoom-btn" aria-label="Maskotu küçült">−</button>
-        <button id="zoomInBtn" class="fab-btn zoom-btn" aria-label="Maskotu büyüt">+</button>
-        <button id="replayBtn" class="fab-btn" aria-label="Sesi yeniden oynat">↻</button>
-        <button id="photoBtn" class="fab-btn" aria-label="Fotoğraf çek">📷</button>
+        <div class="control-cluster mascot-cluster" aria-label="Maskot kontrolleri">
+          <span class="cluster-label">MASKOT</span>
+          <button id="zoomOutBtn" class="control-btn icon" aria-label="Maskotu küçült">−</button>
+          <button id="zoomInBtn" class="control-btn icon" aria-label="Maskotu büyüt">+</button>
+        </div>
+
+        <div class="control-cluster action-cluster" aria-label="Deneyim kontrolleri">
+          <button id="replayBtn" class="control-btn action" aria-label="Sesi yeniden oynat">Yeniden Oynat</button>
+          <button id="photoBtn" class="control-btn capture" aria-label="Fotoğraf çek">Fotoğraf</button>
+        </div>
       </div>
 
       <div id="toast" class="toast is-hidden"></div>
@@ -65,6 +72,7 @@
         <div class="photo-preview-card">
           <img id="photoPreviewImage" alt="Çekilen AR fotoğrafı" />
           <div class="photo-preview-actions">
+            <button id="saveGalleryBtn" class="preview-primary">Galeriye Kaydet</button>
             <button id="sharePhotoBtn" class="preview-secondary">Paylaş</button>
             <button id="closePreviewBtn" class="preview-close">Kapat</button>
           </div>

@@ -264,3 +264,95 @@ body.landscape-preferred .placement-guide{
   }
   .cam-btn,.cam-text-btn{font-size:11px}
 }
+
+
+/* V29 professional camera dock */
+.camera-fab-group,.fab-group{display:none !important}
+.pro-controls{
+  position:absolute;
+  left:50%;
+  bottom:18px;
+  z-index:30;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:min(96vw,900px);
+  justify-content:center;
+  pointer-events:none;
+}
+.control-cluster{
+  pointer-events:auto;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(7,10,15,.76);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 12px 30px rgba(0,0,0,.2);
+  border-radius:16px;
+}
+.control-btn{
+  height:42px;
+  min-width:42px;
+  padding:0 12px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:11px;
+  background:rgba(255,255,255,.055);
+  color:#f5f7fb;
+  font-weight:650;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.control-btn:hover{background:rgba(255,255,255,.10)}
+.control-btn:disabled{opacity:.34;cursor:not-allowed}
+.control-btn.is-active{border-color:rgba(239,54,81,.75);background:rgba(211,18,47,.18)}
+.control-btn.icon{font-size:22px;padding:0;width:42px}
+.control-btn.compact{font-size:12px;letter-spacing:.03em}
+.control-btn.action{font-size:12px;min-width:108px}
+.control-btn.capture{font-size:12px;min-width:88px;background:linear-gradient(180deg,#df1735,#b90d28);border-color:#ef3651}
+.zoom-value{
+  min-width:52px;
+  text-align:center;
+  font-size:13px;
+  font-weight:750;
+  letter-spacing:.02em;
+  color:#fff;
+}
+.cluster-label{font-size:9px;letter-spacing:.18em;color:#8895a5;padding:0 6px}
+.photo-preview-actions{
+  grid-template-columns:1.25fr 1fr auto !important;
+}
+.preview-primary{
+  background:linear-gradient(180deg,#df1735,#b90d28);
+  color:#fff;
+  border-color:#ef3651 !important;
+  font-weight:700;
+}
+#camera{
+  transition:transform .25s ease;
+  will-change:transform;
+}
+@media(max-width:760px){
+  .pro-controls{
+    left:10px;
+    right:10px;
+    bottom:12px;
+    transform:none;
+    width:auto;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+  }
+  .camera-cluster{grid-column:1/-1;justify-content:center}
+  .mascot-cluster{justify-content:center}
+  .action-cluster{justify-content:flex-end}
+  .control-btn{height:40px;min-width:40px;padding:0 9px}
+  .control-btn.action{min-width:86px}
+  .control-btn.capture{min-width:72px}
+  .cluster-label{display:none}
+  .photo-preview-actions{grid-template-columns:1fr 1fr !important}
+  .preview-close{grid-column:1/-1}
+}

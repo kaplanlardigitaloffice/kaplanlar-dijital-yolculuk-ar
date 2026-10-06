@@ -4,11 +4,11 @@
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
   const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), zoomInBtn = $('#zoomInBtn'), zoomOutBtn = $('#zoomOutBtn');
-  const camZoomInBtn = $('#camZoomInBtn'), camZoomOutBtn = $('#camZoomOutBtn'), wideBtn = $('#wideBtn'), landscapeBtn = $('#landscapeBtn');
+  const camZoomInBtn = $('#camZoomInBtn'), camZoomOutBtn = $('#camZoomOutBtn'), wideBtn = $('#wideBtn'), landscapeBtn = $('#landscapeBtn'), cameraZoomLabel = $('#cameraZoomLabel');
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
-  const sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
+  const saveGalleryBtn = $('#saveGalleryBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
 
   const frame = n => `assets/frame_${String(n).padStart(2,'0')}.png`;
   const groups = {
@@ -36,7 +36,8 @@
   let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
 
   let currentDeviceId = null, defaultRearDeviceId = null, wideRearDeviceId = null;
-  let currentCamZoom = 1, camZoomMin = 1, camZoomMax = 1, camZoomStep = 0.25, camZoomSupported = false;
+  // Digital zoom is always available; ultra-wide uses a real lens only when the browser exposes one.
+  let cameraZoom = 1.0, cameraZoomMin = 1.0, cameraZoomMax = 3.0, cameraZoomStep = 0.25;
   let landscapeMode = false, wideMode = false;
 
   function showToast(msg){
@@ -53,10 +54,21 @@
   }
 
   function updateCameraButtons(){
-    setControlState(camZoomInBtn, false, !camZoomSupported || !cameraTrack || currentCamZoom >= camZoomMax - 0.01);
-    setControlState(camZoomOutBtn, false, !camZoomSupported || !cameraTrack || currentCamZoom <= camZoomMin + 0.01);
-    setControlState(wideBtn, wideMode, !cameraTrack && !wideRearDeviceId);
-    setControlState(landscapeBtn, landscapeMode, false);
+    if(cameraZoomLabel) cameraZoomLabel.textContent = `${cameraZoom.toFixed(1)}x`;
+    if(camZoomOutBtn) camZoomOutBtn.disabled = cameraZoom <= cameraZoomMin + 0.01;
+    if(camZoomInBtn) camZoomInBtn.disabled = cameraZoom >= cameraZoomMax - 0.01;
+    if(wideBtn){
+      wideBtn.classList.toggle('is-active', wideMode);
+      wideBtn.disabled = !wideRearDeviceId;
+      wideBtn.title = wideRearDeviceId ? 'Ultra geniş açı' : 'Bu cihaz/tarayıcı ultra geniş açıyı paylaşmıyor';
+    }
+    if(landscapeBtn) landscapeBtn.classList.toggle('is-active', landscapeMode);
+  }
+
+  function applyDigitalCameraZoom(){
+    video.style.transformOrigin = 'center center';
+    video.style.transform = `scale(${cameraZoom})`;
+    updateCameraButtons();
   }
 
   async function unlockAudio(){
@@ -88,24 +100,6 @@
     } catch(e) {}
   }
 
-  async function refreshTrackCapabilities(){
-    cameraTrack = stream?.getVideoTracks?.()[0] || null;
-    camZoomSupported = false;
-    camZoomMin = 1; camZoomMax = 1; camZoomStep = 0.25; currentCamZoom = 1;
-    if(cameraTrack && cameraTrack.getCapabilities){
-      const caps = cameraTrack.getCapabilities();
-      const settings = cameraTrack.getSettings ? cameraTrack.getSettings() : {};
-      if(caps && typeof caps.zoom !== 'undefined'){
-        camZoomSupported = true;
-        camZoomMin = Number(caps.zoom.min ?? 1);
-        camZoomMax = Number(caps.zoom.max ?? 1);
-        camZoomStep = Number(caps.zoom.step ?? 0.25);
-        currentCamZoom = Number(settings.zoom ?? camZoomMin);
-      }
-    }
-    updateCameraButtons();
-  }
-
   async function startCamera(){
     stopCamera();
     try{
@@ -122,10 +116,7 @@
       await video.play();
       errorBox.classList.add('is-hidden');
       await discoverVideoDevices();
-      await refreshTrackCapabilities();
-      if(wideMode && !wideRearDeviceId && camZoomSupported){
-        await setCameraZoom(camZoomMin, true);
-      }
+      applyDigitalCameraZoom();
     } catch(err){
       errorBox.innerHTML = '<b>Kamera açılamadı.</b><br>HTTPS bağlantısını ve kamera iznini kontrol edin.';
       errorBox.classList.remove('is-hidden');
@@ -243,7 +234,7 @@
   function fitVideoCrop(){
     const vw = video.videoWidth || innerWidth, vh = video.videoHeight || innerHeight;
     const cw = innerWidth, ch = innerHeight;
-    const s = Math.max(cw / vw, ch / vh);
+    const s = Math.max(cw / vw, ch / vh) * cameraZoom;
     const drawW = vw * s, drawH = vh * s;
     return { dx:(cw - drawW)/2, dy:(ch - drawH)/2, drawW, drawH, cw, ch };
   }
@@ -309,6 +300,24 @@
     showToast('Fotoğraf hazır');
   }
 
+  async function saveCapturedToGallery(){
+    if(!capturedBlob){ showToast('Önce fotoğraf çekin'); return; }
+    const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
+    try{
+      if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({
+          files:[file],
+          title:'Kaplanlar AR Fotoğrafı',
+          text:'Fotoğraflara Kaydet / Galeriye Kaydet seçeneğini kullanın.'
+        });
+        return;
+      }
+    } catch(err){
+      if(err && err.name === 'AbortError') return;
+    }
+    showToast('Galeri kaydı bu tarayıcıda doğrudan desteklenmiyor');
+  }
+
   async function shareCapturedPhoto(){
     if(!capturedBlob) return;
     const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
@@ -329,38 +338,22 @@
     showToast(`Maskot boyutu: %${Math.round(scale * 100)}`);
   }
 
-  async function setCameraZoom(nextZoom, silent=false){
-    if(!camZoomSupported || !cameraTrack){ if(!silent) showToast('Bu cihazda kamera zoom desteklenmiyor'); return; }
-    const clamped = Math.min(camZoomMax, Math.max(camZoomMin, nextZoom));
-    try{
-      await cameraTrack.applyConstraints({ advanced:[{ zoom: clamped }] });
-      currentCamZoom = clamped;
-      updateCameraButtons();
-      if(!silent) showToast(`Kamera: ${currentCamZoom.toFixed(1)}x`);
-    } catch(e){
-      if(!silent) showToast('Kamera zoom uygulanamadı');
-    }
+  function setCameraZoom(nextZoom){
+    cameraZoom = Math.min(cameraZoomMax, Math.max(cameraZoomMin, nextZoom));
+    applyDigitalCameraZoom();
+    showToast(`Kamera: ${cameraZoom.toFixed(1)}x`);
   }
 
   async function toggleWideMode(){
-    wideMode = !wideMode;
-    if(wideMode){
-      if(wideRearDeviceId){
-        currentDeviceId = wideRearDeviceId;
-        await startCamera();
-        showToast('Geniş açı açıldı');
-      } else if(camZoomSupported){
-        await setCameraZoom(camZoomMin);
-        showToast('Geniş görünüm için minimum zoom kullanıldı');
-      } else {
-        showToast('Bu cihazda geniş açı bulunamadı');
-        wideMode = false;
-      }
-    } else {
-      currentDeviceId = defaultRearDeviceId || currentDeviceId;
-      await startCamera();
-      showToast('Standart açıya dönüldü');
+    if(!wideRearDeviceId){
+      showToast('Ultra geniş açı bu tarayıcıda erişilebilir değil');
+      return;
     }
+    wideMode = !wideMode;
+    currentDeviceId = wideMode ? wideRearDeviceId : defaultRearDeviceId;
+    cameraZoom = 1.0;
+    await startCamera();
+    showToast(wideMode ? 'Ultra geniş açı açıldı' : 'Standart açıya dönüldü');
     updateCameraButtons();
   }
 
@@ -402,10 +395,11 @@
   photoBtn.addEventListener('click', capturePhoto);
   zoomInBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale + .10); });
   zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale - .10); });
-  camZoomInBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(currentCamZoom + camZoomStep); });
-  camZoomOutBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(currentCamZoom - camZoomStep); });
+  camZoomInBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(cameraZoom + cameraZoomStep); });
+  camZoomOutBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(cameraZoom - cameraZoomStep); });
   wideBtn?.addEventListener('click', e => { e.stopPropagation(); toggleWideMode(); });
   landscapeBtn?.addEventListener('click', e => { e.stopPropagation(); toggleLandscapeMode(); });
+  saveGalleryBtn.addEventListener('click', saveCapturedToGallery);
   sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
   closePreviewBtn.addEventListener('click', closePhotoPreview);
   photoPreview.addEventListener('click', e => { if(e.target === photoPreview) closePhotoPreview(); });
@@ -452,6 +446,9 @@
     }
   }, { passive:true });
   arView.addEventListener('touchend', () => { pinchDistance = null; }, { passive:true });
+
+  updateCameraButtons();
+  applyDigitalCameraZoom();
 
   window.addEventListener('beforeunload', stopCamera);
   if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
