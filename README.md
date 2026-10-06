@@ -1,11 +1,8 @@
-# Kaplanlar WebAR V37 — Management Ready
+# Kaplanlar WebAR V38 — Executive Mascot Intro
 
-Düzeltmeler:
-- video oynarken tüm renkli overlay kaldırıldı; videonun üstünde kırmızı tint kalmaz
-- Kaplanlar logosunun dış beyaz zemini transparan yapıldı
-- video sonrası AR geçiş paneli desktop/mobile için yeniden düzenlendi
-- CTA metin çakışmaları önlendi
-- fotoğraf/video kaydetme için iOS/Android sistem paylaşım akışı korunur
-
-Mobil web güvenlik modeli gereği Safari ve Chrome, bir web sayfasına galeriye kullanıcı onayı olmadan doğrudan yazma yetkisi vermez.
-Bu nedenle web üzerinde güvenilir çapraz-platform yöntem sistem paylaşım menüsüdür. Tam otomatik galeri kaydı native/hybrid uygulama gerektirir.
+Bu sürümde:
+- giriş ekranında logo yerine maskot odaklı daha premium bir sunum kullanıldı
+- video intro alanı split hero yapıya geçirildi
+- mobil görünümde giriş ekranı daha dengeli hale getirildi
+- Artırılmış Gerçekliği Dene paneli masaüstü ve mobil için yeniden düzenlendi
+- mobil CTA alanındaki üst üste binme ve taşma sorunları giderildi
