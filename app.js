@@ -22,13 +22,7 @@
   const videoPreview = $('#videoPreview'), videoPreviewPlayer = $('#videoPreviewPlayer');
   const saveVideoBtn = $('#saveVideoBtn'), shareVideoBtn = $('#shareVideoBtn'), closeVideoPreviewBtn = $('#closeVideoPreviewBtn');
 
-  const frame = n => `assets/frame_${String(n).padStart(2,'0')}.png`;
-  const groups = {
-    invite:[frame(7),frame(8),frame(9),frame(10),frame(11),frame(12)],
-    calm:[frame(19),frame(20),frame(21),frame(22),frame(23),frame(24)]
-  };
-
-  let selectedMascotSrc = 'assets/mascot_01.png';
+  let selectedMascotSrc = 'assets/mascots/mascot_01.png';
   let mascotOptions = [];
 
   let stream = null, cameraTrack = null, placed = false, scale = 1.12, drag = null, pinchDistance = null;
@@ -276,6 +270,73 @@
     });
   }
 
+  const GH_REPO = 'kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar';
+
+  function isMascotImage(name, folder){
+    const n = String(name || '').toLowerCase();
+    if(!/\.(png|jpg|jpeg|webp)$/.test(n)) return false;
+
+    // Everything inside assets/mascots is considered a selectable mascot.
+    if(folder === 'mascots') return true;
+
+    // In assets root, accept mascot/maskot-named files but exclude UI/legacy art.
+    if(/^(mascot|maskot)[-_].+\.(png|jpg|jpeg|webp)$/.test(n)) return true;
+    return false;
+  }
+
+  async function githubFolder(path){
+    try{
+      const url = `https://api.github.com/repos/${GH_REPO}/contents/${path}?_=${Date.now()}`;
+      const res = await fetch(url, {
+        cache:'no-store',
+        headers:{'Accept':'application/vnd.github+json'}
+      });
+      if(!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  async function discoverLiveMascots(){
+    const [rootFiles, mascotFiles] = await Promise.all([
+      githubFolder('assets'),
+      githubFolder('assets/mascots')
+    ]);
+
+    const found = [];
+
+    for(const file of rootFiles){
+      if(file?.type === 'file' && isMascotImage(file.name, 'root')){
+        found.push({
+          name:file.name,
+          src:`assets/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
+        });
+      }
+    }
+
+    for(const file of mascotFiles){
+      if(file?.type === 'file' && isMascotImage(file.name, 'mascots')){
+        found.push({
+          name:file.name,
+          src:`assets/mascots/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
+        });
+      }
+    }
+
+    // De-dupe by filename + relative path and sort naturally.
+    const seen = new Set();
+    return found
+      .filter(item => {
+        const key = item.src.split('?')[0];
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
+  }
+
   function renderMascotPicker(){
     if(!mascotTrack) return;
     mascotTrack.innerHTML = '';
@@ -286,19 +347,19 @@
 
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'mascot-option' + (src === selectedMascotSrc ? ' is-selected' : '');
+      btn.className = 'mascot-option' + (index === 0 ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
       btn.setAttribute('aria-label', name);
 
       const img = document.createElement('img');
-      img.src = src + (src.includes('?') ? '&' : '?') + 'v=' + Date.now();
+      img.src = src;
       img.alt = '';
       img.draggable = false;
 
       btn.appendChild(img);
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectedMascotSrc = src + (src.includes('?') ? '&' : '?') + 'v=' + Date.now();
+        selectedMascotSrc = src;
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
@@ -311,36 +372,44 @@
   }
 
   async function loadMascotOptions(){
-    try{
-      const res = await fetch(`assets/mascots.json?_=${Date.now()}`, { cache:'no-store' });
-      if(!res.ok) throw new Error('manifest unavailable');
+    // 1. Always try live GitHub contents first.
+    let live = await discoverLiveMascots();
 
-      const data = await res.json();
-      const items = Array.isArray(data) ? data : data.mascots;
+    // 2. If GitHub API is temporarily unavailable, fall back to manifest.
+    if(!live.length){
+      try{
+        const res = await fetch(`assets/mascots.json?_=${Date.now()}`, {cache:'no-store'});
+        if(res.ok){
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : data.mascots;
+          if(Array.isArray(items)){
+            live = items
+              .filter(item => item && item.src)
+              .map(item => ({
+                name:item.name || item.src.split('/').pop(),
+                src:item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`
+              }));
+          }
+        }
+      }catch(e){}
+    }
 
-      if(!Array.isArray(items) || !items.length){
-        throw new Error('empty mascot manifest');
-      }
-
-      mascotOptions = items
-        .filter(item => item && item.src)
-        .map(item => ({
-          name: item.name || item.src.split('/').pop(),
-          src: item.src
-        }));
-
-      selectedMascotSrc = mascotOptions[0].src + `?v=${Date.now()}`;
-      crossfadeFrame(selectedMascotSrc);
-      renderMascotPicker();
-    }catch(e){
-      mascotOptions = [
-        {name:'mascot_01.png', src:'assets/mascots/mascot_01.png'},
-        {name:'mascot_02.png', src:'assets/mascots/mascot_02.png'},
-        {name:'mascot_03.png', src:'assets/mascots/mascot_03.png'}
+    // 3. Absolute fallback keeps the initial three visible.
+    if(!live.length){
+      live = [
+        {name:'mascot_01.png', src:'assets/mascots/mascot_01.png?v=54'},
+        {name:'mascot_02.png', src:'assets/mascots/mascot_02.png?v=54'},
+        {name:'mascot_03.png', src:'assets/mascots/mascot_03.png?v=54'}
       ];
-      selectedMascotSrc = mascotOptions[0].src + `?v=${Date.now()}`;
-      crossfadeFrame(selectedMascotSrc);
-      renderMascotPicker();
+    }
+
+    mascotOptions = live;
+    selectedMascotSrc = mascotOptions[0].src;
+    crossfadeFrame(selectedMascotSrc);
+    renderMascotPicker();
+
+    if(refreshMascotsBtn){
+      refreshMascotsBtn.title = `${mascotOptions.length} maskot bulundu`;
     }
   }
 

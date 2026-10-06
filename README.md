@@ -1,8 +1,15 @@
-# Kaplanlar WebAR V52 — Picker Visible Fix
+# Kaplanlar WebAR V54 — Live Assets
 
-Düzeltmeler:
-- İlk 3 maskot seçeneği artık HTML içinde doğrudan render edilir; JS/manifest gecikse bile görünür.
-- Maskot yükleme çağrısının yanlışlıkla kamera zoom fonksiyonunun içine girmesi düzeltildi.
-- Picker uygulama açılır açılmaz initialize edilir.
-- AR kameraya her geçişte manifest tekrar yüklenir.
-- Picker z-index ve mobil görünürlük kuralları güçlendirildi.
+Bu sürüm manifest bağımlılığını kaldırır.
+
+Uygulama her açılışta doğrudan public GitHub repository içeriğini okur:
+- `assets/mascots/` içindeki tüm PNG/JPG/JPEG/WEBP dosyaları otomatik seçenek olur.
+- `assets/` kökünde adı `mascot_` veya `maskot_` ile başlayan görseller de otomatik seçenek olur.
+- Dosya SHA'sı URL'e eklenerek browser cache'i kırılır.
+- GitHub API geçici olarak erişilemezse `assets/mascots.json` fallback'i kullanılır.
+- O da yoksa ilk 3 maskot gösterilir.
+
+En sorunsuz kullanım:
+Yeni maskotları doğrudan `assets/mascots/` klasörüne atın.
+Dosya adının ne olduğu önemli değildir.
+GitHub Pages deployment tamamlandıktan sonra uygulamada Yenile'ye basın.
