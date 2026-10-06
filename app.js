@@ -3,8 +3,10 @@
   const intro = $('#intro'), arView = $('#arView'), video = $('#camera'), startBtn = $('#startBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
-  const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), zoomInBtn = $('#zoomInBtn'), zoomOutBtn = $('#zoomOutBtn');
-  const camZoomInBtn = $('#camZoomInBtn'), camZoomOutBtn = $('#camZoomOutBtn'), wideBtn = $('#wideBtn'), landscapeBtn = $('#landscapeBtn'), cameraZoomLabel = $('#cameraZoomLabel');
+  const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), landscapeBtn = $('#landscapeBtn');
+  const lens05Btn = $('#lens05Btn'), lens1Btn = $('#lens1Btn'), lens15Btn = $('#lens15Btn'), lens2Btn = $('#lens2Btn');
+  const lensButtons = [lens05Btn, lens1Btn, lens15Btn, lens2Btn].filter(Boolean);
+  const resizeHint = $('#resizeHint');
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
@@ -54,14 +56,12 @@
   }
 
   function updateCameraButtons(){
-    if(cameraZoomLabel) cameraZoomLabel.textContent = `${cameraZoom.toFixed(1)}x`;
-    if(camZoomOutBtn) camZoomOutBtn.disabled = cameraZoom <= cameraZoomMin + 0.01;
-    if(camZoomInBtn) camZoomInBtn.disabled = cameraZoom >= cameraZoomMax - 0.01;
-    if(wideBtn){
-      wideBtn.classList.toggle('is-active', wideMode);
-      wideBtn.disabled = !wideRearDeviceId;
-      wideBtn.title = wideRearDeviceId ? 'Ultra geniş açı' : 'Bu cihaz/tarayıcı ultra geniş açıyı paylaşmıyor';
-    }
+    lensButtons.forEach(btn => {
+      const z = Number(btn.dataset.zoom || 1);
+      btn.classList.toggle('is-active', Math.abs(z - cameraZoom) < 0.06);
+      if(z === 0.5) btn.disabled = !wideRearDeviceId && cameraZoomMin > 0.5;
+      else btn.disabled = z > cameraZoomMax + 0.01;
+    });
     if(landscapeBtn) landscapeBtn.classList.toggle('is-active', landscapeMode);
   }
 
@@ -228,6 +228,9 @@
     anchor.classList.add('is-placed');
     anchor.style.setProperty('--scale', scale.toFixed(2));
     crossfadeFrame(groups.calm[0]);
+    resizeHint?.classList.remove('is-hidden');
+    clearTimeout(placeMascot._hintTimer);
+    placeMascot._hintTimer = setTimeout(() => resizeHint?.classList.add('is-hidden'), 2600);
     await playNarration(true);
   }
 
@@ -332,10 +335,10 @@
 
   function closePhotoPreview(){ photoPreview.classList.add('is-hidden'); }
 
-  function setScale(nextScale){
+  function setScale(nextScale, silent=false){
     scale = Math.min(1.48, Math.max(.68, nextScale));
     anchor.style.setProperty('--scale', scale.toFixed(2));
-    showToast(`Maskot boyutu: %${Math.round(scale * 100)}`);
+    if(!silent) showToast(`Maskot boyutu: %${Math.round(scale * 100)}`);
   }
 
   function setCameraZoom(nextZoom){
@@ -393,11 +396,11 @@
     if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin');
   });
   photoBtn.addEventListener('click', capturePhoto);
-  zoomInBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale + .10); });
-  zoomOutBtn.addEventListener('click', e => { e.stopPropagation(); if(!placed){ showToast('Önce maskotu yerleştirin'); return; } setScale(scale - .10); });
-  camZoomInBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(cameraZoom + cameraZoomStep); });
-  camZoomOutBtn?.addEventListener('click', e => { e.stopPropagation(); setCameraZoom(cameraZoom - cameraZoomStep); });
-  wideBtn?.addEventListener('click', e => { e.stopPropagation(); toggleWideMode(); });
+  lensButtons.forEach(btn => btn.addEventListener('click', async e => {
+    e.stopPropagation();
+    if(btn.disabled) return;
+    await setCameraZoom(Number(btn.dataset.zoom));
+  }));
   landscapeBtn?.addEventListener('click', e => { e.stopPropagation(); toggleLandscapeMode(); });
   saveGalleryBtn.addEventListener('click', saveCapturedToGallery);
   sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
@@ -441,7 +444,7 @@
   arView.addEventListener('touchmove', e => {
     if(e.touches.length === 2 && pinchDistance && placed){
       const d = distance(e.touches[0], e.touches[1]);
-      setScale(scale * (d/pinchDistance));
+      setScale(scale * (d/pinchDistance), true);
       pinchDistance = d;
     }
   }, { passive:true });

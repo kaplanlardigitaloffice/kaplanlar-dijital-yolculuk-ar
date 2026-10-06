@@ -45,26 +45,19 @@
         </div>
       </div>
 
-      <div class="pro-controls">
-        <div class="control-cluster camera-cluster" aria-label="Kamera kontrolleri">
-          <button id="wideBtn" class="control-btn compact" aria-label="Geniş açı">0.5x</button>
-          <button id="camZoomOutBtn" class="control-btn icon" aria-label="Kamera zoom out">−</button>
-          <span id="cameraZoomLabel" class="zoom-value">1.0x</span>
-          <button id="camZoomInBtn" class="control-btn icon" aria-label="Kamera zoom in">+</button>
-          <button id="landscapeBtn" class="control-btn compact" aria-label="Yatay çekim">16:9</button>
+      <div class="premium-camera-bar" aria-label="Kamera kontrolleri">
+        <div class="lens-selector" role="group" aria-label="Kamera yakınlaştırma">
+          <button id="lens05Btn" class="lens-chip" data-zoom="0.5">0.5×</button>
+          <button id="lens1Btn" class="lens-chip is-active" data-zoom="1">1×</button>
+          <button id="lens15Btn" class="lens-chip" data-zoom="1.5">1.5×</button>
+          <button id="lens2Btn" class="lens-chip" data-zoom="2">2×</button>
         </div>
-
-        <div class="control-cluster mascot-cluster" aria-label="Maskot kontrolleri">
-          <span class="cluster-label">MASKOT</span>
-          <button id="zoomOutBtn" class="control-btn icon" aria-label="Maskotu küçült">−</button>
-          <button id="zoomInBtn" class="control-btn icon" aria-label="Maskotu büyüt">+</button>
-        </div>
-
-        <div class="control-cluster action-cluster" aria-label="Deneyim kontrolleri">
-          <button id="replayBtn" class="control-btn action" aria-label="Sesi yeniden oynat">Yeniden Oynat</button>
-          <button id="photoBtn" class="control-btn capture" aria-label="Fotoğraf çek">Fotoğraf</button>
-        </div>
+        <button id="landscapeBtn" class="bar-icon-btn" aria-label="Yatay çekim modu" title="Yatay çekim">16:9</button>
+        <button id="replayBtn" class="bar-icon-btn" aria-label="Sesi yeniden oynat" title="Yeniden oynat">↻</button>
+        <button id="photoBtn" class="shutter-btn" aria-label="Fotoğraf çek" title="Fotoğraf çek"><span></span></button>
       </div>
+
+      <div id="resizeHint" class="resize-hint is-hidden">İki parmakla maskot boyutunu ayarlayın</div>
 
       <div id="toast" class="toast is-hidden"></div>
       <div id="errorBox" class="error-box is-hidden"></div>

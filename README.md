@@ -1,11 +1,9 @@
-# Kaplanlar WebAR V29 — Professional Camera UI
+# Kaplanlar WebAR V30 — Premium Minimal
 
 Bu sürümde:
-- kamera zoom + / - artık tarayıcı donanım zoom'una bağlı değil; dijital zoom olarak her cihazda çalışır
-- zoom değeri 1.0x–3.0x arasında ekranda gösterilir
-- gerçek 0.5x ultra geniş açı yalnızca tarayıcının ayrı ultra-wide lensi göstermesi halinde aktif olur
-- 16:9 yatay çekim modu korunur
-- kamera ve maskot kontrolleri profesyonel cam dock tasarımına taşındı
-- fotoğraf önizlemesine **Galeriye Kaydet** eklendi
-- Web uygulamaları iOS/Android galeriye sessizce yazamaz; Galeriye Kaydet sistem paylaşım ekranını açar ve kullanıcı Fotoğraflara/Galeriye Kaydet seçeneğini seçer
-- Paylaş butonu ayrıca korunur
+- maskot boyutlandırma için artı/eksi butonları tamamen kaldırıldı
+- maskot boyutu yalnızca iki parmak pinch hareketiyle ayarlanır
+- kamera zoom arayüzü 0.5× / 1× / 1.5× / 2× lens seçici haline getirildi
+- fotoğraf düğmesi gerçek kamera shutter görünümüne yaklaştırıldı
+- 16:9 ve yeniden oynat kontrolleri minimal tutuldu
+- galeriye kaydet / paylaş akışı korunur
