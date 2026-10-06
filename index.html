@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#070a0f" />
-  <title>Kaplanlar AR</title>
+  <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,47 +16,63 @@
       </video>
       <div class="video-shade"></div>
 
-      <div id="introOverlay" class="intro-overlay-shell">
-        <div class="intro-hero-grid intro-hero-grid--clean">
-          <div class="intro-copy-col intro-copy-col--clean">
-            <div id="introBanner" class="intro-ribbon" aria-label="Kaplanlar Dijital Yolculuğunu Kaçırma">
+      <div id="introOverlay" class="intro-overlay-shell v40-cover">
+        <div class="v40-cover-inner">
+          <div class="v40-cover-copy">
+            <div class="v40-overline">KAPLANLAR • DİJİTAL DÖNÜŞÜM</div>
+            <h1 id="introBanner" class="v40-title">
               <span>Kaplanlar Dijital</span>
-              <span>Yolculuğunu Kaçırma</span>
-            </div>
-            <div class="intro-action-wrap intro-action-wrap--clean">
-              <button id="videoStartBtn" class="video-start-btn" aria-label="Videoyu başlat">
-                <span class="play-icon"></span>
-                <span>Videoyu Başlat</span>
-              </button>
-            </div>
+              <span class="v40-title-accent">Yolculuğunu Kaçırma</span>
+            </h1>
+            <p class="v40-lead">Yeni çalışma biçimlerini, yapay zekâyı ve artırılmış gerçekliği tek bir deneyimde keşfet.</p>
+
+            <button id="videoStartBtn" class="v40-primary-btn" aria-label="Videoyu başlat">
+              <span class="v40-play" aria-hidden="true"></span>
+              <span class="v40-primary-label">
+                <strong>Deneyimi Başlat</strong>
+                <small>34 saniyelik lansman videosu</small>
+              </span>
+            </button>
           </div>
-          <div class="intro-visual-col intro-visual-col--clean" aria-hidden="true">
-            <div class="intro-mascot-stage intro-mascot-stage--clean">
-              <img src="assets/cta_mascot.png" alt="" class="intro-hero-mascot intro-hero-mascot--clean" />
-            </div>
+
+          <div class="v40-cover-visual" aria-hidden="true">
+            <div class="v40-visual-glow"></div>
+            <img src="assets/cta_mascot.png" alt="" class="v40-cover-mascot" />
           </div>
         </div>
-      </div>
-</div>
 
-      <section id="enterArPanel" class="enter-ar-panel is-hidden" aria-label="Artırılmış gerçeklik deneyimine geçiş">
-        <div class="enter-ar-card-clean">
-          <div class="enter-ar-card-top">
-            <img src="assets/cta_mascot.png" alt="Kaplanlar maskotu" class="enter-ar-mascot enter-ar-mascot--clean" />
-            <div class="enter-ar-copy enter-ar-copy--clean">
-              <div class="enter-ar-eyebrow">ARTIRILMIŞ GERÇEKLİK DENEYİMİ</div>
-              <h2>Maskotu gerçek ortamında deneyimle.</h2>
-              <p>Tek dokunuşla kamerayı aç, maskotu bulunduğun ortama yerleştir ve deneyimi başlat.</p>
-            </div>
+        <div class="v40-cover-footer">
+          <span>Yapay zekâ lansman deneyimi</span>
+          <span class="v40-footer-dot"></span>
+          <span>WebAR</span>
+        </div>
+      </div>
+
+      <section id="enterArPanel" class="enter-ar-panel v40-gateway is-hidden" aria-label="Artırılmış gerçeklik deneyimine geçiş">
+        <div class="v40-gateway-inner">
+          <div class="v40-gateway-visual">
+            <div class="v40-gateway-orbit"></div>
+            <img src="assets/cta_mascot.png" alt="Kaplanlar maskotu" class="v40-gateway-mascot" />
           </div>
-          <div class="enter-ar-card-actions">
-            <button id="enterArBtn" class="enter-ar-btn enter-ar-btn--clean" aria-label="Artırılmış Gerçekliği Sende Dene">
+
+          <div class="v40-gateway-copy">
+            <div class="v40-overline">SIRADAKİ DENEYİM</div>
+            <h2>Şimdi dijital yolculuğu<br/>kendi ortamına taşı.</h2>
+            <p>Kameranı aç, Kaplanlar maskotunu bulunduğun alana yerleştir ve artırılmış gerçeklik deneyimini canlı olarak başlat.</p>
+
+            <div class="v40-feature-row" aria-label="Deneyim özellikleri">
+              <span><b>01</b> Yerleştir</span>
+              <span><b>02</b> Ölçekle</span>
+              <span><b>03</b> Fotoğraf / Video</span>
+            </div>
+
+            <button id="enterArBtn" class="v40-enter-btn" aria-label="Artırılmış Gerçekliği Sende Dene">
               <span>Artırılmış Gerçekliği Sende Dene</span>
-              <span class="enter-ar-arrow">→</span>
+              <span class="v40-enter-arrow">→</span>
             </button>
           </div>
         </div>
-      </section></section>
+      </section>
     </section>
 
     <section id="arView" class="screen ar-view is-hidden">

@@ -1,8 +1,8 @@
-# Kaplanlar WebAR V39 — Clean Intro CTA
+# Kaplanlar WebAR V40 — Executive Frontend
 
 Bu sürümde:
-- giriş sayfasındaki üstteki iki kutu tamamen kaldırıldı
-- giriş ekranı sadeleştirildi: yalnızca banner, maskot ve başlat butonu kaldı
-- Artırılmış Gerçekliği Dene ekranı baştan sadeleştirildi
-- iç içe geçmiş görünüm azaltıldı, daha temiz tek kart yapısına geçirildi
-- mobil UX için CTA ve metin akışı yeniden düzenlendi
+- kapak tamamen executive landing-page mantığında yeniden tasarlandı
+- başlık hiyerarşisi, CTA, maskot yerleşimi ve mikro bilgi alanları iyileştirildi
+- video sonrası ekran tam ekran profesyonel AR gateway haline getirildi
+- mobilde tek kolon, taşmasız ve dokunma odaklı UX uygulandı
+- masaüstünde daha yönetim sunumuna uygun iki kolonlu layout kullanıldı

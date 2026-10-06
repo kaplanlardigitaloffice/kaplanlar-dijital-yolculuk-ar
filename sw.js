@@ -1,4 +1,4 @@
-const CACHE='kaplanlar-webar-v39-clean-intro-cta';
+const CACHE='kaplanlar-webar-v40-executive-frontend';
 self.addEventListener('install',e=>{self.skipWaiting();});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',()=>{});
