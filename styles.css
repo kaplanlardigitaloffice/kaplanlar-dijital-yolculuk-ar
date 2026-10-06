@@ -2393,3 +2393,16 @@ body.landscape-preferred .placement-guide{
     align-self:center !important;
   }
 }
+
+
+/* V42 — save UX */
+.save-hint{
+  margin-top:2px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.78) !important;
+  font-size:11px !important;
+  line-height:1.45 !important;
+}

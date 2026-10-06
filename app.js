@@ -406,12 +406,51 @@
 
   async function savePhotoToGallery(){
     if(!capturedBlob) return;
-    const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
-    try{
-      const shared = await shareFileForGallery(file, saveHint, 'image');
-      if(shared) return;
 
-      // Desktop / unsupported mobile fallback: download the actual file.
+    const file = new File(
+      [capturedBlob],
+      capturedFileName || 'kaplanlar-ar.png',
+      { type:'image/png' }
+    );
+
+    const { isIOS, isAndroid } = platformFamily();
+
+    try{
+      // Mobile-first: the only cross-platform web route that can hand the image
+      // to Photos/Gallery is the native share sheet.
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({
+          files:[file],
+          title:'Kaplanlar AR Fotoğrafı'
+        });
+
+        if(isIOS){
+          setHint(saveHint, 'iPhone/iPad: açılan menüden “Görüntüyü Kaydet” seçin.');
+        }else if(isAndroid){
+          setHint(saveHint, 'Android: açılan menüden Google Fotoğraflar / Galeri uygulamasını seçin.');
+        }else{
+          setHint(saveHint, 'Açılan sistem menüsünden cihazına kaydetme seçeneğini kullanın.');
+        }
+        return;
+      }
+
+      // Fallback for browsers that cannot share files:
+      // open the generated image in its own page so the user can long-press/save.
+      if(isIOS || isAndroid){
+        const url = capturedObjectUrl || URL.createObjectURL(capturedBlob);
+        const opened = window.open(url, '_blank', 'noopener,noreferrer');
+        if(opened){
+          setHint(
+            saveHint,
+            isIOS
+              ? 'Yeni açılan fotoğrafa basılı tutup “Fotoğraflara Kaydet” seçin.'
+              : 'Yeni açılan fotoğrafa basılı tutup “Görseli indir / Kaydet” seçin.'
+          );
+          return;
+        }
+      }
+
+      // Desktop fallback
       const url = URL.createObjectURL(capturedBlob);
       const a = document.createElement('a');
       a.href = url;
@@ -420,9 +459,11 @@
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
-      setHint(saveHint, 'Dosya indirildi. Mobil tarayıcı galeriye doğrudan yazmayı desteklemiyor.');
+      setHint(saveHint, 'Fotoğraf cihazına indirildi.');
     }catch(err){
-      if(err && err.name !== 'AbortError') setHint(saveHint, 'Kaydetme menüsü açılamadı.');
+      if(err && err.name !== 'AbortError'){
+        setHint(saveHint, 'Kaydetme açılamadı. Paylaş butonunu kullanarak Fotoğraflar / Galeri seçin.');
+      }
     }
   }
 

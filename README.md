@@ -1,13 +1,10 @@
-# Kaplanlar WebAR V41 — Gateway Center Fix
+# Kaplanlar WebAR V42 — Save Flow
 
-Bu sürümde video sonrası açılan artırılmış gerçeklik geçiş ekranındaki sola kayma problemi düzeltildi.
+Bu sürümde fotoğraf kaydetme akışı güçlendirildi:
+- iOS/Android'de önce native paylaşım menüsü açılır
+- iOS'ta “Görüntüyü Kaydet”
+- Android'de Google Fotoğraflar / Galeri seçimi
+- file-share desteklenmezse fotoğraf yeni sekmede açılır ve basılı tutarak kaydetme fallback'i sağlanır
+- masaüstünde normal dosya indirme fallback'i kullanılır
 
-Kök neden:
-Eski `enter-ar-panel` stillerinden kalan `left:50%` ve `transform:translateX(-50%)` kuralları,
-V40 tam ekran gateway tasarımıyla çakışıyordu.
-
-Düzeltme:
-- panel `inset:0` ile viewport'a sabitlendi
-- legacy `left / bottom / transform` kuralları hard reset edildi
-- desktop ve mobile için merkezleme yeniden tanımlandı
-- mobilde yatay taşma kapatıldı
+Not: Normal mobil web sayfaları iOS/Android galeriye kullanıcı onayı olmadan doğrudan yazamaz.
