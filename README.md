@@ -1,12 +1,7 @@
-# Kaplanlar WebAR V48 — Clean Launch + Save
+# Kaplanlar WebAR V49 — Quick Photo + Mascot Picker
 
-Fixes:
-- Android açılışında video görüntüsü artık kapak arkasında görünmez.
-- Video sadece “Deneyimi Başlat” butonuna basınca görünür.
-- Rastgele ekrana dokunmak video geçişini tetiklemez.
-- Video bitince AR geçiş ekranı açılır.
-- Fotoğraf/video kaydetme butonları artık doğrudan dosya indirme başlatır.
-- iPhone/iPad / Android uyarı metinleri kaldırıldı.
-
-Not: Mobil web tarayıcısı indirilen dosyanın doğrudan Photos/Galeri koleksiyonuna yazılacağını garanti etmez;
-dosya cihazın indirme davranışına göre kaydedilir. Gerçek Photos/Galeri'ye sessiz kayıt native uygulama yetkisi gerektirir.
+- Giriş ekranında “Doğrudan Fotoğraf Çek” ile videoyu izlemeden AR kameraya geçilir.
+- Kamera ekranında yatay kaydırılabilir maskot seçici bulunur.
+- Başlangıçta mascot_01.png, mascot_02.png, mascot_03.png vardır.
+- Yeni görsel eklemek için assets klasörüne sıralı adla mascot_04.png, mascot_05.png ... eklemek yeterlidir.
+- Uygulama 01–30 arası bu dosyaları otomatik kontrol edip seçiciye ekler.

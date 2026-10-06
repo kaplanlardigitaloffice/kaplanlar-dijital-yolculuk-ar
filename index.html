@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070a0f" />
   <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=48" />
+  <link rel="stylesheet" href="styles.css?v=49" />
 </head>
 <body>
   <main id="app">
@@ -28,14 +28,24 @@
             </h1>
             <p>Yeni çalışma biçimlerini, yapay zekâyı ve artırılmış gerçekliği tek bir deneyimde keşfet.</p>
 
-            <button id="videoStartBtn" type="button" class="v48-start-btn"
-                    onclick="return window.startKaplanlarVideo(event)">
-              <span class="v48-play"></span>
-              <span>
-                <strong>Deneyimi Başlat</strong>
-                <small>Lansman videosunu izle</small>
-              </span>
-            </button>
+            <div class="v49-cover-actions">
+              <button id="videoStartBtn" type="button" class="v48-start-btn"
+                      onclick="return window.startKaplanlarVideo(event)">
+                <span class="v48-play"></span>
+                <span>
+                  <strong>Deneyimi Başlat</strong>
+                  <small>Lansman videosunu izle</small>
+                </span>
+              </button>
+
+              <button id="quickPhotoBtn" type="button" class="v49-secondary-btn">
+                <span class="v49-camera-icon" aria-hidden="true"></span>
+                <span>
+                  <strong>Doğrudan Fotoğraf Çek</strong>
+                  <small>Videoyu izlemeden kameraya geç</small>
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -79,6 +89,11 @@
             <img id="mascotB" class="mascot-layer" src="assets/frame_19.png" alt="" draggable="false" />
           </div>
         </div>
+      </div>
+
+      <div id="mascotPicker" class="mascot-picker" aria-label="Maskot seçimi">
+        <div class="mascot-picker-label">Maskot seç</div>
+        <div id="mascotTrack" class="mascot-track" role="list"></div>
       </div>
 
       <div class="premium-camera-bar" aria-label="Kamera kontrolleri">
@@ -190,6 +205,6 @@
       }
     });
   </script>
-  <script src="app.js?v=48"></script>
+  <script src="app.js?v=49"></script>
 </body>
 </html>

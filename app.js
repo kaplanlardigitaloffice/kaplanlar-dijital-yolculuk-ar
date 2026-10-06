@@ -6,6 +6,7 @@
   const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
+  const quickPhotoBtn = $('#quickPhotoBtn'), mascotTrack = $('#mascotTrack');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
   const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn');
@@ -26,6 +27,9 @@
     invite:[frame(7),frame(8),frame(9),frame(10),frame(11),frame(12)],
     calm:[frame(19),frame(20),frame(21),frame(22),frame(23),frame(24)]
   };
+
+  let selectedMascotSrc = 'assets/mascot_01.png';
+  let mascotOptions = [];
 
   let stream = null, cameraTrack = null, placed = false, scale = 1.12, drag = null, pinchDistance = null;
   let activeLayer = 'A', shotTimers = [], quietTimer = null;
@@ -99,26 +103,9 @@
     clearShotTimers();
     anchor.dataset.mood = 'quiet';
     anchor.dataset.ai = 'off';
-    crossfadeFrame(groups.calm[0]);
-
-    const idleCycle = () => {
-      if(!placed) return;
-      quietTimer = setTimeout(() => {
-        crossfadeFrame(groups.calm[1]);
-        quietTimer = setTimeout(() => {
-          crossfadeFrame(groups.calm[0]);
-          quietTimer = setTimeout(() => {
-            crossfadeFrame(groups.calm[2]);
-            quietTimer = setTimeout(() => {
-              crossfadeFrame(groups.calm[0]);
-              quietTimer = setTimeout(idleCycle, 7600);
-            }, 1500);
-          }, 6000);
-        }, 1200);
-      }, 5200);
-    };
-    idleCycle();
+    crossfadeFrame(selectedMascotSrc);
   }
+
 
   function updateCameraButtons(){
     lensButtons.forEach(btn => {
@@ -141,6 +128,7 @@
     video.style.transformOrigin = 'center center';
     video.style.transform = `scale(${cameraZoom >= 1 ? cameraZoom : 1})`;
     updateCameraButtons();
+  loadMascotOptions();
   }
 
   async function discoverVideoDevices(){
@@ -210,11 +198,24 @@
     try { launchVideo.pause(); } catch(e) {}
     intro.classList.add('is-hidden');
     arView.classList.remove('is-hidden');
+
+    placed = false;
+    guide.classList.remove('is-hidden');
+    anchor.classList.add('is-hidden');
+    anchor.classList.remove('is-placed');
+
     await startCamera();
   }
 
   // V47: launch flow is handled directly in index.html.
 
+
+  quickPhotoBtn?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await openArExperience();
+    showToast('Maskotu seçin ve yerleştirmek için ekrana dokunun');
+  });
 
   enterArBtn?.addEventListener('click', openArExperience);
 
@@ -227,18 +228,81 @@
     anchor.classList.add('is-placed');
     anchor.style.setProperty('--scale', scale.toFixed(2));
 
+    crossfadeFrame(selectedMascotSrc);
+    anchor.dataset.mood = 'quiet';
+
     resizeHint?.classList.remove('is-hidden');
     clearTimeout(placeMascot._hintTimer);
-    placeMascot._hintTimer = setTimeout(() => resizeHint?.classList.add('is-hidden'), 2600);
-
-    anchor.dataset.mood = 'invite';
-    playShots([frame(7), frame(12)], 4800);
-    setTimeout(() => startQuietLife(), 5200);
+    placeMascot._hintTimer = setTimeout(() => resizeHint?.classList.add('is-hidden'), 2400);
   }
+
 
   function setScale(nextScale){
     scale = Math.min(1.48, Math.max(.68, nextScale));
     anchor.style.setProperty('--scale', scale.toFixed(2));
+  }
+
+
+  async function assetExists(src){
+    try{
+      const res = await fetch(src, { method:'HEAD', cache:'no-store' });
+      return res.ok;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function renderMascotPicker(){
+    if(!mascotTrack) return;
+    mascotTrack.innerHTML = '';
+
+    mascotOptions.forEach((src, index) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mascot-option' + (src === selectedMascotSrc ? ' is-selected' : '');
+      btn.setAttribute('role','listitem');
+      btn.setAttribute('aria-label', `Maskot ${index + 1}`);
+
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      img.draggable = false;
+
+      btn.appendChild(img);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedMascotSrc = src;
+        crossfadeFrame(selectedMascotSrc);
+        mascotTrack.querySelectorAll('.mascot-option').forEach(el => el.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
+      });
+
+      mascotTrack.appendChild(btn);
+    });
+  }
+
+  async function loadMascotOptions(){
+    const found = [];
+    let misses = 0;
+
+    for(let i=1; i<=30 && misses < 4; i++){
+      const src = `assets/mascot_${String(i).padStart(2,'0')}.png`;
+      if(await assetExists(src)){
+        found.push(src);
+        misses = 0;
+      }else{
+        misses++;
+      }
+    }
+
+    mascotOptions = found.length ? found : [
+      'assets/mascot_01.png',
+      'assets/mascot_02.png',
+      'assets/mascot_03.png'
+    ];
+
+    selectedMascotSrc = mascotOptions[0];
+    renderMascotPicker();
   }
 
   async function setCameraZoom(nextZoom){
