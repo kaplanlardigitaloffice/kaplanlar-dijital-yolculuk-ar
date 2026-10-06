@@ -38,7 +38,7 @@ img{display:block;max-width:100%}
 .voice-bars span:nth-child(2){animation-delay:.1s}.voice-bars span:nth-child(3){animation-delay:.2s}.voice-bars span:nth-child(4){animation-delay:.3s}.voice-bars span:nth-child(5){animation-delay:.4s}
 @keyframes bars{0%,100%{height:8px;opacity:.65}50%{height:28px;opacity:1}}
 .mascot-frame{position:relative;width:100%;height:100%;display:grid;place-items:center}
-.mascot-layer{grid-area:1/1;width:clamp(330px,66vw,460px);opacity:0;transform:translateY(8px) scale(.99);filter:drop-shadow(0 34px 34px rgba(0,0,0,.34));transition:opacity .75s cubic-bezier(.22,.61,.36,1),transform .85s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
+.mascot-layer{grid-area:1/1;width:clamp(330px,66vw,460px);opacity:0;transform:translateY(8px) scale(.99);filter:drop-shadow(0 34px 34px rgba(0,0,0,.34));transition:opacity 1.25s cubic-bezier(.22,.61,.36,1),transform 1.35s cubic-bezier(.22,.61,.36,1);will-change:opacity,transform}
 .mascot-layer.is-active{opacity:1;transform:translateY(0) scale(1)}
 .ar-anchor[data-mood="quiet"] .mascot-layer.is-active{animation:quietLook 6s ease-in-out infinite}
 .ar-anchor[data-mood="idle"] .mascot-layer.is-active{animation:idleFloat 4.8s ease-in-out infinite alternate}
@@ -156,8 +156,8 @@ img{display:block;max-width:100%}
 .ar-anchor[data-mood="invite"] .mascot-layer.is-active,
 .ar-anchor[data-mood="energy"] .mascot-layer.is-active,
 .ar-anchor[data-mood="curious"] .mascot-layer.is-active,
-.ar-anchor[data-mood="ai"] .mascot-layer.is-active{animation:subtleTalk 3.4s ease-in-out infinite alternate}
-.ar-anchor.is-speaking .mascot-layer.is-active{animation:subtleTalk 3.4s ease-in-out infinite alternate}
+.ar-anchor[data-mood="ai"] .mascot-layer.is-active{animation:subtleTalk 5.8s ease-in-out infinite alternate}
+.ar-anchor.is-speaking .mascot-layer.is-active{animation:subtleTalk 5.8s ease-in-out infinite alternate}
 @keyframes subtleTalk{from{transform:translateY(0) scale(1)}to{transform:translateY(-2px) scale(1.004)}}
 .intro-mascot{width:min(74vw,440px)}
 .photo-preview-actions{grid-template-columns:1.35fr 1fr auto}
@@ -182,6 +182,44 @@ img{display:block;max-width:100%}
 .ar-anchor[data-mood="future"] .mascot-layer.is-active,
 .ar-anchor[data-mood="invite"] .mascot-layer.is-active,
 .ar-anchor[data-mood="ai"] .mascot-layer.is-active,
-.ar-anchor[data-mood="energy"] .mascot-layer.is-active{animation:subtleTalk 3.5s ease-in-out infinite alternate}
+.ar-anchor[data-mood="energy"] .mascot-layer.is-active{animation:subtleTalk 5.8s ease-in-out infinite alternate}
 .ar-anchor[data-mood="quiet"] .mascot-layer.is-active{animation:none}
 @media(max-width:640px){.photo-preview-actions{grid-template-columns:1fr !important}}
+
+
+/* V25 slower cinematic motion */
+.mascot-layer{
+  transition:opacity 1.05s cubic-bezier(.22,.61,.36,1),
+             transform 1.15s cubic-bezier(.22,.61,.36,1) !important;
+}
+.ar-anchor[data-mood="curious"] .mascot-layer.is-active,
+.ar-anchor[data-mood="warm"] .mascot-layer.is-active,
+.ar-anchor[data-mood="future"] .mascot-layer.is-active,
+.ar-anchor[data-mood="invite"] .mascot-layer.is-active,
+.ar-anchor[data-mood="ai"] .mascot-layer.is-active,
+.ar-anchor[data-mood="energy"] .mascot-layer.is-active{
+  animation:cinematicBreath 5.2s ease-in-out infinite alternate !important;
+}
+@keyframes cinematicBreath{
+  from{transform:translateY(0) scale(1)}
+  to{transform:translateY(-2px) scale(1.003)}
+}
+
+
+/* V26 — no floor ring + explicit resize controls */
+.floor-ring{display:none !important}
+.zoom-btn{
+  font-size:27px;
+  font-weight:400;
+  line-height:1;
+}
+.fab-group{
+  align-items:center;
+}
+@media(max-width:640px){
+  .fab-group{
+    display:grid;
+    grid-template-columns:48px 48px;
+    gap:8px;
+  }
+}

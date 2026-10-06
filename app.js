@@ -3,7 +3,7 @@
   const intro = $('#intro'), arView = $('#arView'), video = $('#camera'), startBtn = $('#startBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
-  const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn');
+  const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), zoomInBtn = $('#zoomInBtn'), zoomOutBtn = $('#zoomOutBtn');
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
@@ -18,21 +18,22 @@
     calm:[frame(19),frame(20),frame(21),frame(22),frame(23),frame(24)]
   };
 
-  // Timeline uses group-based animation. You can replace frame_01..frame_24 directly in assets/.
+  // V25: cinematic pacing. Each sentence uses only a few deliberate poses.
+  // No fast looping. A pose stays visible long enough to feel like one continuous performance.
   const scriptTimeline = [
-    { start:0.00, end:2.80, mood:'curious', group:'curious', fps:2.2, ai:false },
-    { start:2.80, end:7.20, mood:'warm', group:'calm', fps:1.8, ai:false },
-    { start:7.20, end:11.80, mood:'future', group:'explain', fps:2.4, ai:false },
-    { start:11.80, end:15.70, mood:'ai', group:'explain', fps:2.0, ai:true },
-    { start:15.70, end:18.60, mood:'warm', group:'calm', fps:1.7, ai:false },
-    { start:18.60, end:24.20, mood:'invite', group:'invite', fps:2.3, ai:false },
-    { start:24.20, end:28.10, mood:'warm', group:'calm', fps:1.7, ai:false },
-    { start:28.10, end:30.00, mood:'curious', group:'curious', fps:1.9, ai:false },
-    { start:30.00, end:33.20, mood:'energy', group:'invite', fps:2.0, ai:false }
+    { start:0.00, end:2.80, mood:'curious', shots:[frame(1),frame(3)], ai:false },
+    { start:2.80, end:7.20, mood:'warm', shots:[frame(19)], ai:false },
+    { start:7.20, end:11.80, mood:'future', shots:[frame(13),frame(18)], ai:false },
+    { start:11.80, end:15.70, mood:'ai', shots:[frame(14)], ai:true },
+    { start:15.70, end:18.60, mood:'warm', shots:[frame(21)], ai:false },
+    { start:18.60, end:24.20, mood:'invite', shots:[frame(7),frame(12)], ai:false },
+    { start:24.20, end:28.10, mood:'warm', shots:[frame(22)], ai:false },
+    { start:28.10, end:30.00, mood:'curious', shots:[frame(4)], ai:false },
+    { start:30.00, end:33.20, mood:'energy', shots:[frame(11)], ai:false }
   ];
 
   let stream = null, placed = false, scale = 1.16, drag = null, pinchDistance = null;
-  let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, groupTimer = null, currentGroupFrame = 0, quietTimer = null;
+  let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, shotTimers = [], quietTimer = null;
   let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
 
   function showToast(msg){
@@ -91,18 +92,23 @@
     });
   }
 
-  function stopGroupPlayback(){ clearInterval(groupTimer); groupTimer = null; }
-  function playGroup(groupName, fps = 2){
-    stopGroupPlayback();
-    const frames = groups[groupName] || groups.calm;
-    const interval = Math.max(350, 1000 / fps);
-    currentGroupFrame = 0;
-    crossfadeFrame(frames[0]);
-    if(frames.length <= 1) return;
-    groupTimer = setInterval(() => {
-      currentGroupFrame = (currentGroupFrame + 1) % frames.length;
-      crossfadeFrame(frames[currentGroupFrame]);
-    }, interval);
+  function clearShotTimers(){
+    shotTimers.forEach(clearTimeout);
+    shotTimers=[];
+  }
+
+  function playShots(shots, segmentDurationMs){
+    clearShotTimers();
+    if(!shots || !shots.length) return;
+    crossfadeFrame(shots[0]);
+    if(shots.length===1) return;
+
+    // Keep each pose on screen significantly longer for a calmer cinematic feel.
+    const safeStep = Math.max(2400, Math.floor(segmentDurationMs / shots.length));
+    for(let i=1;i<shots.length;i++){
+      const t=Math.min(segmentDurationMs-700, safeStep*i);
+      shotTimers.push(setTimeout(()=>crossfadeFrame(shots[i]), t));
+    }
   }
 
   function applyTimelineSegment(index){
@@ -111,12 +117,13 @@
     const seg = scriptTimeline[index];
     anchor.dataset.mood = seg.mood;
     anchor.dataset.ai = seg.ai ? 'on' : 'off';
-    playGroup(seg.group, seg.fps);
+    const durationMs = Math.max(1000, (seg.end - seg.start) * 1000);
+    playShots(seg.shots, durationMs);
   }
 
   function startQuietLife(){
     clearTimeout(quietTimer);
-    stopGroupPlayback();
+    clearShotTimers();
     anchor.classList.remove('is-speaking');
     anchor.dataset.mood = 'quiet';
     anchor.dataset.ai = 'off';
@@ -133,10 +140,10 @@
             quietTimer = setTimeout(() => {
               crossfadeFrame(groups.calm[0]);
               quietTimer = setTimeout(idleCycle, 7200);
-            }, 1000);
-          }, 5800);
-        }, 900);
-      }, 5200);
+            }, 1600);
+          }, 7600);
+        }, 1400);
+      }, 6400);
     };
     idleCycle();
   }
@@ -155,7 +162,7 @@
   async function playNarration(fromStart = false){
     if(!placed) return;
     clearTimeout(quietTimer);
-    stopGroupPlayback();
+    clearShotTimers();
     try{
       if(fromStart){ narration.currentTime = 0; currentSegmentIndex = -1; }
       narration.volume = 1;
@@ -245,12 +252,6 @@
     ctx.drawImage(img, imgRect.left, imgRect.top, imgRect.width, imgRect.height);
     ctx.restore();
 
-    ctx.strokeStyle = 'rgba(211,18,47,.85)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.ellipse(anchorRect.left + anchorRect.width/2, anchorRect.top + anchorRect.height*0.82, anchorRect.width*0.22, anchorRect.height*0.03, 0, 0, Math.PI*2);
-    ctx.stroke();
-
     finaliseCaptureWithLogo(ctx, cw, ch);
     showToast('Fotoğraf hazır');
   }
@@ -269,6 +270,12 @@
 
   function closePhotoPreview(){ photoPreview.classList.add('is-hidden'); }
 
+  function setScale(nextScale){
+    scale = Math.min(1.48, Math.max(.68, nextScale));
+    anchor.style.setProperty('--scale', scale.toFixed(2));
+    showToast(`Boyut: %${Math.round(scale * 100)}`);
+  }
+
   startBtn.addEventListener('click', async() => {
     await unlockAudio();
     intro.classList.add('is-hidden');
@@ -281,6 +288,16 @@
     if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin');
   });
   photoBtn.addEventListener('click', capturePhoto);
+  zoomInBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if(!placed){ showToast('Önce maskotu yerleştirin'); return; }
+    setScale(scale + .10);
+  });
+  zoomOutBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if(!placed){ showToast('Önce maskotu yerleştirin'); return; }
+    setScale(scale - .10);
+  });
   sharePhotoBtn.addEventListener('click', shareCapturedPhoto);
   closePreviewBtn.addEventListener('click', closePhotoPreview);
   photoPreview.addEventListener('click', e => { if(e.target === photoPreview) closePhotoPreview(); });
@@ -322,8 +339,7 @@
   arView.addEventListener('touchmove', e => {
     if(e.touches.length === 2 && pinchDistance && placed){
       const d = distance(e.touches[0], e.touches[1]);
-      scale = Math.min(1.42, Math.max(.84, scale * (d/pinchDistance)));
-      anchor.style.setProperty('--scale', scale.toFixed(2));
+      setScale(scale * (d/pinchDistance));
       pinchDistance = d;
     }
   }, { passive:true });
