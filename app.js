@@ -1,14 +1,15 @@
 (() => {
   const $ = s => document.querySelector(s);
-  const intro = $('#intro'), arView = $('#arView'), video = $('#camera'), startBtn = $('#startBtn');
+  const intro = $('#intro'), arView = $('#arView'), video = $('#camera');
+  const launchVideo = $('#launchVideo'), videoStartBtn = $('#videoStartBtn'), enterArBtn = $('#enterArBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
-  const replayBtn = $('#replayBtn'), photoBtn = $('#photoBtn'), landscapeBtn = $('#landscapeBtn');
+  const photoBtn = $('#photoBtn'), landscapeBtn = $('#landscapeBtn');
   const lens05Btn = $('#lens05Btn'), lens1Btn = $('#lens1Btn'), lens15Btn = $('#lens15Btn'), lens2Btn = $('#lens2Btn');
   const lensButtons = [lens05Btn, lens1Btn, lens15Btn, lens2Btn].filter(Boolean);
   const resizeHint = $('#resizeHint');
   const errorBox = $('#errorBox'), toast = $('#toast');
-  const narration = $('#narration'), captureCanvas = $('#captureCanvas');
+  const captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
   const saveGalleryBtn = $('#saveGalleryBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn'), saveHint = $('#saveHint');
 
@@ -34,7 +35,7 @@
   ];
 
   let stream = null, cameraTrack = null, placed = false, scale = 1.16, drag = null, pinchDistance = null;
-  let audioUnlocked = false, activeLayer = 'A', currentSegmentIndex = -1, shotTimers = [], quietTimer = null;
+  let activeLayer = 'A', currentSegmentIndex = -1, shotTimers = [], quietTimer = null;
   let capturedBlob = null, capturedObjectUrl = null, capturedFileName = '';
 
   let currentDeviceId = null, defaultRearDeviceId = null, wideRearDeviceId = null;
@@ -75,22 +76,6 @@
     updateCameraButtons();
   }
 
-  async function unlockAudio(){
-    if(audioUnlocked) return true;
-    try{
-      narration.volume = 0;
-      narration.currentTime = 0;
-      await narration.play();
-      narration.pause();
-      narration.currentTime = 0;
-      narration.volume = 1;
-      audioUnlocked = true;
-      return true;
-    } catch(e){
-      narration.volume = 1;
-      return false;
-    }
-  }
 
   async function discoverVideoDevices(){
     try{
@@ -187,7 +172,7 @@
     anchor.dataset.ai = 'off';
     crossfadeFrame(groups.calm[0]);
     const idleCycle = () => {
-      if(!placed || (!narration.paused && !narration.ended)) return;
+      if(!placed) return;
       quietTimer = setTimeout(() => {
         crossfadeFrame(groups.calm[1]);
         quietTimer = setTimeout(() => {
@@ -205,30 +190,7 @@
     idleCycle();
   }
 
-  function syncNarration(){
-    const t = narration.currentTime || 0;
-    const idx = scriptTimeline.findIndex(s => t >= s.start && t < s.end);
-    if(idx >= 0){
-      anchor.classList.add('is-speaking');
-      applyTimelineSegment(idx);
-    } else {
-      anchor.classList.remove('is-speaking');
-    }
-  }
 
-  async function playNarration(fromStart=false){
-    if(!placed) return;
-    clearTimeout(quietTimer);
-    clearShotTimers();
-    try{
-      if(fromStart){ narration.currentTime = 0; currentSegmentIndex = -1; }
-      narration.volume = 1;
-      await narration.play();
-      showToast('Ses oynatılıyor');
-    } catch(err){
-      showToast('Ses için tekrar dokunun');
-    }
-  }
 
   async function placeMascot(x,y){
     if(placed) return;
@@ -242,7 +204,10 @@
     resizeHint?.classList.remove('is-hidden');
     clearTimeout(placeMascot._hintTimer);
     placeMascot._hintTimer = setTimeout(() => resizeHint?.classList.add('is-hidden'), 2600);
-    await playNarration(true);
+    // Short, restrained entrance sequence; then remain mostly still.
+    anchor.dataset.mood = 'invite';
+    playShots([frame(7), frame(12)], 5200);
+    setTimeout(() => startQuietLife(), 5600);
   }
 
   function fitVideoCrop(){
@@ -402,17 +367,51 @@
     updateCameraButtons();
   }
 
-  startBtn.addEventListener('click', async() => {
-    await unlockAudio();
+
+  async function openArExperience(){
+    try { launchVideo.pause(); } catch(e) {}
     intro.classList.add('is-hidden');
     arView.classList.remove('is-hidden');
     await startCamera();
+  }
+
+  async function tryStartLaunchVideo(){
+    try{
+      launchVideo.muted = false;
+      await launchVideo.play();
+      videoStartBtn.classList.add('is-hidden');
+    }catch(err){
+      // Mobile browsers commonly block audible autoplay.
+      videoStartBtn.classList.remove('is-hidden');
+      try{
+        launchVideo.muted = true;
+        await launchVideo.play();
+      }catch(e){}
+    }
+  }
+
+  videoStartBtn.addEventListener('click', async () => {
+    try{
+      launchVideo.muted = false;
+      launchVideo.currentTime = Math.max(0, launchVideo.currentTime);
+      await launchVideo.play();
+      videoStartBtn.classList.add('is-hidden');
+    }catch(e){
+      showToast('Videoyu başlatmak için tekrar dokunun');
+    }
   });
 
-  replayBtn.addEventListener('click', async() => {
-    await unlockAudio();
-    if(placed) await playNarration(true); else showToast('Önce maskotu yerleştirin');
+  launchVideo.addEventListener('ended', () => {
+    videoStartBtn.classList.add('is-hidden');
+    enterArBtn.classList.remove('is-hidden');
   });
+
+  enterArBtn.addEventListener('click', openArExperience);
+
+  // Start the landing video immediately. If audible autoplay is blocked,
+  // visuals continue muted and the play control lets the user enable sound.
+  window.addEventListener('load', tryStartLaunchVideo, {once:true});
+
   photoBtn.addEventListener('click', capturePhoto);
   lensButtons.forEach(btn => btn.addEventListener('click', async e => {
     e.stopPropagation();
@@ -446,19 +445,6 @@
     if(!placed) await placeMascot(e.clientX, e.clientY - 18);
   });
 
-  narration.addEventListener('timeupdate', syncNarration);
-  narration.addEventListener('ended', () => {
-    currentSegmentIndex = -1;
-    anchor.classList.remove('is-speaking');
-    startQuietLife();
-    showToast('Anlatım tamamlandı');
-  });
-  narration.addEventListener('pause', () => {
-    if(placed && !narration.ended){
-      anchor.classList.remove('is-speaking');
-      startQuietLife();
-    }
-  });
 
   anchor.addEventListener('pointerdown', e => {
     anchor.setPointerCapture?.(e.pointerId);

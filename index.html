@@ -10,15 +10,22 @@
 </head>
 <body>
   <main id="app">
-    <section id="intro" class="screen intro">
-      <div class="intro-grid"></div>
-      <div class="intro-shell">
-        <img src="assets/kaplanlar_logo.png" alt="Kaplanlar" class="intro-logo" />
-        <div class="intro-core">
-          <img src="assets/frame_01.png" class="intro-mascot" alt="Kaplanlar maskotu" />
-          <button id="startBtn" class="primary-btn">DENEYİMİ BAŞLAT</button>
-        </div>
-      </div>
+    <section id="intro" class="screen video-intro">
+      <video id="launchVideo" class="launch-video" playsinline preload="auto">
+        <source src="assets/launch_video.mp4" type="video/mp4" />
+      </video>
+      <div class="video-shade"></div>
+
+      <div class="intro-title">Kaplanlar Dijital Yolculuğunu Kaçırma</div>
+
+      <button id="videoStartBtn" class="video-start-btn is-hidden" aria-label="Videoyu başlat">
+        <span class="play-icon"></span>
+        <span>Videoyu Başlat</span>
+      </button>
+
+      <button id="enterArBtn" class="enter-ar-btn is-hidden">
+        Artırılmış Gerçekliği Sende Dene
+      </button>
     </section>
 
     <section id="arView" class="screen ar-view is-hidden">
@@ -53,7 +60,6 @@
           <button id="lens2Btn" class="lens-chip" data-zoom="2">2×</button>
         </div>
         <button id="landscapeBtn" class="bar-icon-btn" aria-label="Yatay çekim modu" title="Yatay çekim">16:9</button>
-        <button id="replayBtn" class="bar-icon-btn" aria-label="Sesi yeniden oynat" title="Yeniden oynat">↻</button>
         <button id="photoBtn" class="shutter-btn" aria-label="Fotoğraf çek" title="Fotoğraf çek"><span></span></button>
       </div>
 
@@ -75,8 +81,6 @@
       <canvas id="captureCanvas" class="is-hidden"></canvas>
     </section>
   </main>
-
-  <audio id="narration" preload="auto" src="assets/launch_voice.mp3"></audio>
   <script src="app.js"></script>
 </body>
 </html>
