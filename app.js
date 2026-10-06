@@ -10,7 +10,7 @@
   const errorBox = $('#errorBox'), toast = $('#toast');
   const narration = $('#narration'), captureCanvas = $('#captureCanvas');
   const photoPreview = $('#photoPreview'), photoPreviewImage = $('#photoPreviewImage');
-  const saveGalleryBtn = $('#saveGalleryBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn');
+  const saveGalleryBtn = $('#saveGalleryBtn'), sharePhotoBtn = $('#sharePhotoBtn'), closePreviewBtn = $('#closePreviewBtn'), saveHint = $('#saveHint');
 
   const frame = n => `assets/frame_${String(n).padStart(2,'0')}.png`;
   const groups = {
@@ -59,8 +59,12 @@
     lensButtons.forEach(btn => {
       const z = Number(btn.dataset.zoom || 1);
       btn.classList.toggle('is-active', Math.abs(z - cameraZoom) < 0.06);
-      if(z === 0.5) btn.disabled = !wideRearDeviceId && cameraZoomMin > 0.5;
-      else btn.disabled = z > cameraZoomMax + 0.01;
+      if(z === 0.5){
+        btn.classList.toggle('is-hidden', !wideRearDeviceId);
+        btn.disabled = !wideRearDeviceId;
+      } else {
+        btn.disabled = z > cameraZoomMax + 0.01;
+      }
     });
     if(landscapeBtn) landscapeBtn.classList.toggle('is-active', landscapeMode);
   }
@@ -92,12 +96,19 @@
     try{
       const devices = await navigator.mediaDevices.enumerateDevices();
       const vids = devices.filter(d => d.kind === 'videoinput');
-      const rear = vids.filter(d => /back|rear|environment|arka/i.test(d.label));
-      defaultRearDeviceId = (rear[0] || vids[0] || {}).deviceId || null;
-      const wideMatch = rear.find(d => /ultra|wide|0\.5|geniş|genis/i.test(d.label) && d.deviceId !== defaultRearDeviceId);
-      wideRearDeviceId = wideMatch ? wideMatch.deviceId : null;
+      const rear = vids.filter(d => /back|rear|environment|arka|world/i.test(d.label));
+      const pool = rear.length ? rear : vids;
+      const normal = pool.find(d => /back camera$|rear camera$|environment camera$/i.test(d.label)) || pool[0] || null;
+      defaultRearDeviceId = normal?.deviceId || null;
+      const wideRegex = /(ultra[\s-]?wide|ultrawide|0[.,]?5x|wide angle|geniş açı|genis aci)/i;
+      const wideMatch = pool.find(d => wideRegex.test(d.label) && d.deviceId !== defaultRearDeviceId);
+      wideRearDeviceId = wideMatch?.deviceId || null;
       if(!currentDeviceId) currentDeviceId = defaultRearDeviceId;
-    } catch(e) {}
+      updateCameraButtons();
+    } catch(e){
+      wideRearDeviceId = null;
+      updateCameraButtons();
+    }
   }
 
   async function startCamera(){
@@ -308,17 +319,23 @@
     const file = new File([capturedBlob], capturedFileName || 'kaplanlar-ar.png', { type:'image/png' });
     try{
       if(navigator.share && navigator.canShare && navigator.canShare({ files:[file] })){
-        await navigator.share({
-          files:[file],
-          title:'Kaplanlar AR Fotoğrafı',
-          text:'Fotoğraflara Kaydet / Galeriye Kaydet seçeneğini kullanın.'
-        });
+        if(saveHint){
+          saveHint.textContent = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+            ? 'Açılan menüden “Görüntüyü Kaydet” seçin.'
+            : 'Açılan sistem menüsünden Fotoğraflar / Galeri seçeneğini kullanın.';
+          saveHint.classList.remove('is-hidden');
+        }
+        await navigator.share({ files:[file] });
         return;
       }
     } catch(err){
       if(err && err.name === 'AbortError') return;
     }
-    showToast('Galeri kaydı bu tarayıcıda doğrudan desteklenmiyor');
+    if(saveHint){
+      saveHint.textContent = 'Bu tarayıcı doğrudan galeri kaydına izin vermiyor. Paylaş ile sistem menüsünü kullanın.';
+      saveHint.classList.remove('is-hidden');
+    }
+    showToast('Doğrudan galeri kaydı desteklenmiyor');
   }
 
   async function shareCapturedPhoto(){
@@ -349,15 +366,16 @@
 
   async function toggleWideMode(){
     if(!wideRearDeviceId){
-      showToast('Ultra geniş açı bu tarayıcıda erişilebilir değil');
+      showToast('Bu tarayıcı ultra geniş lensi erişilebilir göstermiyor');
       return;
     }
     wideMode = !wideMode;
     currentDeviceId = wideMode ? wideRearDeviceId : defaultRearDeviceId;
-    cameraZoom = 1.0;
+    cameraZoom = wideMode ? 0.5 : 1.0;
     await startCamera();
-    showToast(wideMode ? 'Ultra geniş açı açıldı' : 'Standart açıya dönüldü');
+    video.style.transform = 'scale(1)';
     updateCameraButtons();
+    showToast(wideMode ? '0.5× ultra geniş açı' : '1× standart açı');
   }
 
   async function toggleLandscapeMode(){
@@ -398,8 +416,24 @@
   photoBtn.addEventListener('click', capturePhoto);
   lensButtons.forEach(btn => btn.addEventListener('click', async e => {
     e.stopPropagation();
-    if(btn.disabled) return;
-    await setCameraZoom(Number(btn.dataset.zoom));
+    const z = Number(btn.dataset.zoom || 1);
+    if(z === 0.5){
+      if(!wideRearDeviceId){ showToast('Bu tarayıcı ultra geniş lensi erişilebilir göstermiyor'); return; }
+      wideMode = true;
+      currentDeviceId = wideRearDeviceId;
+      cameraZoom = 0.5;
+      await startCamera();
+      video.style.transform = 'scale(1)';
+      updateCameraButtons();
+      showToast('0.5× ultra geniş açı');
+      return;
+    }
+    if(wideMode){
+      wideMode = false;
+      currentDeviceId = defaultRearDeviceId;
+      await startCamera();
+    }
+    setCameraZoom(z);
   }));
   landscapeBtn?.addEventListener('click', e => { e.stopPropagation(); toggleLandscapeMode(); });
   saveGalleryBtn.addEventListener('click', saveCapturedToGallery);

@@ -1,9 +1,4 @@
-# Kaplanlar WebAR V30 — Premium Minimal
+# Kaplanlar WebAR V31 — Reliable Camera
 
-Bu sürümde:
-- maskot boyutlandırma için artı/eksi butonları tamamen kaldırıldı
-- maskot boyutu yalnızca iki parmak pinch hareketiyle ayarlanır
-- kamera zoom arayüzü 0.5× / 1× / 1.5× / 2× lens seçici haline getirildi
-- fotoğraf düğmesi gerçek kamera shutter görünümüne yaklaştırıldı
-- 16:9 ve yeniden oynat kontrolleri minimal tutuldu
-- galeriye kaydet / paylaş akışı korunur
+- 0.5× sadece tarayıcı gerçek ultra-wide kamerayı ayrı cihaz olarak gösteriyorsa görünür.
+- Fotoğraflara Kaydet, mobil webin izin verdiği sistem paylaşım menüsünü açar; doğrudan galeriye sessiz yazma mümkün değildir.

@@ -494,3 +494,7 @@ body.landscape-preferred .placement-guide{
     bottom:calc(76px + env(safe-area-inset-bottom));
   }
 }
+
+/* V31 — reliable camera semantics */
+.save-hint{margin:2px 2px 10px;padding:9px 11px;border-radius:10px;background:rgba(255,255,255,.055);color:rgba(255,255,255,.72);font-size:12px;line-height:1.35}
+.lens-chip.is-hidden{display:none !important}
