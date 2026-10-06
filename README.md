@@ -1,11 +1,9 @@
-# Kaplanlar WebAR V34 — Video Intro + Record
+# Kaplanlar WebAR V35 — Executive Intro
 
-Bu sürümde:
-- girişte kırmızı profesyonel banner: **Kaplanlar Dijital Yolculuğunu Kaçırma**
-- video otomatik başlamaz; kullanıcı **Videoyu Başlat** ile başlatır
-- video başlayınca banner ve başlat butonu kalkar
-- video bitince maskot görselli **Artırılmış Gerçekliği Sende Dene** kartı görünür
-- 16:9 kontrolü kaldırıldı
-- AR ekranında video kayıt butonu eklendi
-- maskot boyutlandırma pinch ile devam eder
-- fotoğraf ve video için kaydet / paylaş önizlemeleri vardır
+Bu sürümde giriş ekranı yönetim sunumuna uygun daha premium / kurumsal hale getirildi:
+- üst sağda şeffaf Kaplanlar marka alanı
+- daha güçlü ve profesyonel kırmızı hero ribbon
+- daha rafine video başlat CTA
+- video bitince daha premium AR deneyim kartı
+
+İşlevler V34 ile aynı kalır.

@@ -861,3 +861,183 @@ body.landscape-preferred .placement-guide{
   .shutter-btn span{width:34px;height:34px}
   .resizeHint{bottom:calc(76px + env(safe-area-inset-bottom))}
 }
+
+
+/* V35 — executive-level intro redesign */
+.video-intro{
+  background:#03050a;
+}
+.video-shade{
+  background:
+    radial-gradient(circle at 18% 22%, rgba(223,23,53,.22), transparent 28%),
+    linear-gradient(90deg, rgba(3,5,8,.72) 0%, rgba(3,5,8,.34) 42%, rgba(3,5,8,.18) 100%),
+    linear-gradient(180deg, rgba(3,5,8,.54) 0%, rgba(3,5,8,.08) 30%, rgba(3,5,8,.02) 62%, rgba(3,5,8,.56) 100%);
+}
+.intro-overlay-shell{
+  position:absolute;
+  inset:0;
+  z-index:8;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:calc(24px + env(safe-area-inset-top)) 32px calc(28px + env(safe-area-inset-bottom));
+  transition:opacity .45s ease, transform .45s ease;
+}
+.intro-overlay-shell.is-hidden{
+  opacity:0;
+  transform:translateY(-6px);
+  pointer-events:none;
+}
+.intro-brand-wrap{
+  align-self:flex-end;
+  padding:12px 14px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:20px;
+  background:rgba(10,12,16,.34);
+  backdrop-filter:blur(18px) saturate(120%);
+  -webkit-backdrop-filter:blur(18px) saturate(120%);
+  box-shadow:0 18px 36px rgba(0,0,0,.16);
+}
+.intro-brand-logo{
+  display:block;
+  width:min(210px,22vw);
+  min-width:128px;
+  height:auto;
+  opacity:.96;
+}
+.intro-hero-wrap{
+  max-width:min(840px,72vw);
+  margin-top:auto;
+  margin-bottom:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:18px;
+}
+.intro-kicker{
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.82);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.16em;
+}
+.intro-ribbon{
+  position:relative;
+  display:inline-flex;
+  flex-direction:column;
+  gap:8px;
+  padding:24px 32px 22px;
+  border-radius:26px;
+  background:linear-gradient(180deg, rgba(230,28,60,.98) 0%, rgba(181,13,40,.96) 100%);
+  box-shadow:0 24px 70px rgba(181,13,40,.30), inset 0 1px 0 rgba(255,255,255,.26);
+  overflow:hidden;
+}
+.intro-ribbon::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(110deg, rgba(255,255,255,.16) 10%, rgba(255,255,255,0) 36%);
+  pointer-events:none;
+}
+.intro-ribbon span{
+  position:relative;
+  color:#fff;
+  font-size:clamp(28px,4.8vw,62px);
+  font-weight:800;
+  letter-spacing:-.045em;
+  line-height:.95;
+  text-wrap:balance;
+  text-shadow:0 1px 0 rgba(0,0,0,.08);
+}
+.intro-hero-line{
+  width:min(380px,40vw);
+  height:3px;
+  border-radius:999px;
+  background:linear-gradient(90deg, #df1735 0%, rgba(255,255,255,.65) 68%, rgba(255,255,255,0) 100%);
+  box-shadow:0 0 20px rgba(223,23,53,.28);
+}
+.intro-action-wrap{
+  display:flex;
+  justify-content:flex-start;
+}
+.video-start-btn{
+  position:static;
+  transform:none;
+  min-height:56px;
+  padding:0 22px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(9,12,16,.46);
+  font-size:14px;
+  letter-spacing:.01em;
+  box-shadow:0 18px 45px rgba(0,0,0,.22);
+}
+.video-start-btn:hover{filter:brightness(1.04)}
+.enter-ar-card{
+  width:min(90vw,400px);
+  padding:18px 18px 16px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(9,12,16,.40);
+  box-shadow:0 26px 70px rgba(0,0,0,.30);
+}
+.enter-ar-card.is-ready{
+  animation:fadeUpCard .45s ease both;
+}
+.enter-ar-mascot{
+  width:min(44vw,220px);
+  max-width:220px;
+}
+.enter-ar-text{
+  font-size:15px;
+  font-weight:760;
+  letter-spacing:.01em;
+}
+@keyframes fadeUpCard{
+  from{opacity:0;transform:translateX(-50%) translateY(10px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+@media (max-width: 900px){
+  .intro-overlay-shell{
+    padding:calc(18px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom));
+  }
+  .intro-brand-wrap{
+    padding:10px 12px;
+  }
+  .intro-brand-logo{
+    width:min(180px,32vw);
+    min-width:118px;
+  }
+  .intro-hero-wrap{
+    max-width:94vw;
+    gap:14px;
+  }
+  .intro-ribbon{
+    width:min(94vw,640px);
+    padding:18px 18px 16px;
+    border-radius:22px;
+  }
+  .intro-ribbon span{
+    font-size:clamp(24px,7vw,40px);
+    line-height:.98;
+  }
+  .intro-hero-line{
+    width:min(240px,50vw);
+  }
+  .intro-action-wrap{
+    justify-content:center;
+  }
+  .video-start-btn{
+    width:min(92vw,320px);
+    justify-content:center;
+  }
+  .enter-ar-card{
+    width:min(92vw,360px);
+    padding-top:14px;
+  }
+}

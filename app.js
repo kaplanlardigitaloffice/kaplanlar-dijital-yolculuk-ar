@@ -2,7 +2,7 @@
   const $ = s => document.querySelector(s);
 
   const intro = $('#intro'), arView = $('#arView');
-  const introBanner = $('#introBanner'), launchVideo = $('#launchVideo');
+  const introOverlay = $('#introOverlay'), introBanner = $('#introBanner'), launchVideo = $('#launchVideo');
   const videoStartBtn = $('#videoStartBtn'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
@@ -214,7 +214,8 @@
   }
 
   videoStartBtn.addEventListener('click', async () => {
-    introBanner.classList.add('is-hidden');
+    introOverlay?.classList.add('is-hidden');
+    introBanner?.classList.add('is-hidden');
     videoStartBtn.classList.add('is-hidden');
     launchVideo.currentTime = 0;
     try{
@@ -229,6 +230,7 @@
 
   launchVideo.addEventListener('ended', () => {
     enterArBtn.classList.remove('is-hidden');
+    enterArBtn.classList.add('is-ready');
   });
 
   enterArBtn.addEventListener('click', openArExperience);
