@@ -6,10 +6,10 @@
   const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
-  const quickPhotoBtn = $('#quickPhotoBtn'), mascotTrack = $('#mascotTrack'), refreshMascotsBtn = $('#refreshMascotsBtn');
+  const quickPhotoBtn = $('#quickPhotoBtn'), conceptTrack = $('#conceptTrack'), mascotTrack = $('#mascotTrack'), refreshMascotsBtn = $('#refreshMascotsBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
-  const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn');
+  const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn'), cameraFlipBtn = $('#cameraFlipBtn');
   const lens05Btn = $('#lens05Btn'), lens1Btn = $('#lens1Btn'), lens15Btn = $('#lens15Btn'), lens2Btn = $('#lens2Btn');
   const lensButtons = [lens05Btn, lens1Btn, lens15Btn, lens2Btn].filter(Boolean);
   const resizeHint = $('#resizeHint');
@@ -22,8 +22,10 @@
   const videoPreview = $('#videoPreview'), videoPreviewPlayer = $('#videoPreviewPlayer');
   const saveVideoBtn = $('#saveVideoBtn'), shareVideoBtn = $('#shareVideoBtn'), closeVideoPreviewBtn = $('#closeVideoPreviewBtn');
 
-  let selectedMascotSrc = 'assets/mascots/mascot_01.png';
+  let selectedMascotSrc = 'assets/mascots/kurumsal/mascot_01.png';
   let mascotOptions = [];
+  let mascotConcepts = [];
+  let activeConceptId = null;
 
   let stream = null, cameraTrack = null, placed = false, scale = 1.12, drag = null, pinchDistance = null;
   let activeLayer = 'A', shotTimers = [], quietTimer = null;
@@ -32,6 +34,7 @@
   let recordedBlob = null, recordedObjectUrl = null, recordedFileName = '';
 
   let currentDeviceId = null, defaultRearDeviceId = null, wideRearDeviceId = null;
+  let cameraFacing = 'environment';
   let cameraZoom = 1.0, cameraZoomMin = 1.0, cameraZoomMax = 3.0;
   let wideMode = false;
 
@@ -102,25 +105,42 @@
 
 
   function updateCameraButtons(){
+    const isFront = cameraFacing === 'user';
+
     lensButtons.forEach(btn => {
       const z = Number(btn.dataset.zoom || 1);
       btn.classList.toggle('is-active', Math.abs(z - cameraZoom) < 0.06);
+
       if(z === 0.5){
-        btn.classList.toggle('is-hidden', !wideRearDeviceId);
-        btn.disabled = !wideRearDeviceId;
+        const canUseWide = !isFront && !!wideRearDeviceId;
+        btn.classList.toggle('is-hidden', !canUseWide);
+        btn.disabled = !canUseWide;
       } else {
         btn.disabled = false;
       }
     });
+
+    if(cameraFlipBtn){
+      cameraFlipBtn.classList.toggle('is-front', isFront);
+      const label = cameraFlipBtn.querySelector('.camera-flip-label');
+      if(label) label.textContent = isFront ? 'Arka' : 'Ön';
+      cameraFlipBtn.setAttribute('aria-label', isFront ? 'Arka kameraya geç' : 'Ön kameraya geç');
+    }
 
     recordBtn.classList.toggle('is-recording', recording);
     recordBtn.querySelector('.record-label').textContent = recording ? 'Durdur' : 'Kayıt';
     recordBtn.setAttribute('aria-label', recording ? 'Video kaydını durdur' : 'Video kaydı başlat');
   }
 
-  function applyDigitalCameraZoom(){
+  function applyVideoTransform(){
+    const zoomScale = cameraZoom >= 1 ? cameraZoom : 1;
+    const mirror = cameraFacing === 'user' ? -1 : 1;
     video.style.transformOrigin = 'center center';
-    video.style.transform = `scale(${cameraZoom >= 1 ? cameraZoom : 1})`;
+    video.style.transform = `scaleX(${mirror}) scale(${zoomScale})`;
+  }
+
+  function applyDigitalCameraZoom(){
+    applyVideoTransform();
     updateCameraButtons();
   }
 
@@ -159,8 +179,14 @@
         width:{ ideal: 1920 },
         height:{ ideal: 1080 }
       };
-      if(currentDeviceId) videoConstraints.deviceId = { exact: currentDeviceId };
-      else videoConstraints.facingMode = { ideal:'environment' };
+
+      if(cameraFacing === 'user'){
+        videoConstraints.facingMode = { ideal:'user' };
+      } else if(currentDeviceId){
+        videoConstraints.deviceId = { exact: currentDeviceId };
+      } else {
+        videoConstraints.facingMode = { ideal:'environment' };
+      }
 
       stream = await navigator.mediaDevices.getUserMedia({ audio:false, video: videoConstraints });
       video.srcObject = stream;
@@ -170,11 +196,16 @@
       await discoverVideoDevices();
       await refreshTrackCapabilities();
 
-      if(wideMode && !wideRearDeviceId){
+      if(cameraFacing === 'user'){
+        wideMode = false;
+        cameraZoom = Math.max(1, cameraZoom);
+      } else if(wideMode && !wideRearDeviceId){
         wideMode = false;
         cameraZoom = 1.0;
-        applyDigitalCameraZoom();
       }
+
+      applyVideoTransform();
+      updateCameraButtons();
     } catch(err){
       errorBox.innerHTML = '<b>Kamera açılamadı.</b><br>HTTPS bağlantısını ve kamera iznini kontrol edin.';
       errorBox.classList.remove('is-hidden');
@@ -198,7 +229,6 @@
     anchor.classList.remove('is-placed');
 
     await startCamera();
-    bindStaticMascotOptions();
     await loadMascotOptions();
   }
 
@@ -219,7 +249,8 @@
     await loadMascotOptions();
     refreshMascotsBtn.textContent = 'Yenile';
     refreshMascotsBtn.disabled = false;
-    showToast(`${mascotOptions.length} maskot bulundu`);
+    const totalMascots = mascotConcepts.reduce((sum,c) => sum + c.mascots.length, 0);
+    showToast(`${mascotConcepts.length} konsept • ${totalMascots} maskot`);
   });
 
   enterArBtn?.addEventListener('click', openArExperience);
@@ -272,16 +303,30 @@
 
   const GH_REPO = 'kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar';
 
-  function isMascotImage(name, folder){
-    const n = String(name || '').toLowerCase();
-    if(!/\.(png|jpg|jpeg|webp)$/.test(n)) return false;
+  function isImageFile(name){
+    return /\.(png|jpg|jpeg|webp)$/i.test(String(name || ''));
+  }
 
-    // Everything inside assets/mascots is considered a selectable mascot.
-    if(folder === 'mascots') return true;
-
-    // In assets root, accept mascot/maskot-named files but exclude UI/legacy art.
-    if(/^(mascot|maskot)[-_].+\.(png|jpg|jpeg|webp)$/.test(n)) return true;
-    return false;
+  function conceptTitleFromFolder(folder){
+    const raw = decodeURIComponent(String(folder || '')).replace(/[-_]+/g, ' ').trim();
+    const map = {
+      '90s': "90'lar",
+      '90 lar': "90'lar",
+      '90lar': "90'lar",
+      'corporate': 'Kurumsal',
+      'kurumsal': 'Kurumsal',
+      'launch': 'Lansman',
+      'lansman': 'Lansman',
+      'office': 'Ofis',
+      'ofis': 'Ofis',
+      'digital': 'Dijital',
+      'dijital': 'Dijital',
+      'celebration': 'Kutlama',
+      'kutlama': 'Kutlama'
+    };
+    const key = raw.toLowerCase();
+    if(map[key]) return map[key];
+    return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Genel';
   }
 
   async function githubFolder(path){
@@ -299,67 +344,129 @@
     }
   }
 
-  async function discoverLiveMascots(){
-    const [rootFiles, mascotFiles] = await Promise.all([
-      githubFolder('assets'),
-      githubFolder('assets/mascots')
-    ]);
+  async function discoverConceptsFromGitHub(){
+    const rootEntries = await githubFolder('assets/mascots');
+    const concepts = [];
 
-    const found = [];
-
-    for(const file of rootFiles){
-      if(file?.type === 'file' && isMascotImage(file.name, 'root')){
-        found.push({
-          name:file.name,
-          src:`assets/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
-        });
-      }
-    }
-
-    for(const file of mascotFiles){
-      if(file?.type === 'file' && isMascotImage(file.name, 'mascots')){
-        found.push({
-          name:file.name,
-          src:`assets/mascots/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
-        });
-      }
-    }
-
-    // De-dupe by filename + relative path and sort naturally.
-    const seen = new Set();
-    return found
-      .filter(item => {
-        const key = item.src.split('?')[0];
-        if(seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      })
+    // Existing V54 structure stays valid:
+    // images directly under assets/mascots appear as "Genel".
+    const flatMascots = rootEntries
+      .filter(item => item?.type === 'file' && isImageFile(item.name))
+      .map(item => ({
+        name:item.name,
+        src:`assets/mascots/${encodeURIComponent(item.name)}?sha=${String(item.sha || '').slice(0,12)}`
+      }))
       .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
+
+    if(flatMascots.length > 0){
+      concepts.push({ id:'general', title:'Genel', mascots:flatMascots });
+    }
+
+    // Optional subfolders become concepts. Empty folders are never shown.
+    const dirs = rootEntries.filter(item => item?.type === 'dir');
+    const folderConcepts = await Promise.all(dirs.map(async dir => {
+      const files = await githubFolder(`assets/mascots/${encodeURIComponent(dir.name)}`);
+      const mascots = files
+        .filter(file => file?.type === 'file' && isImageFile(file.name))
+        .map(file => ({
+          name:file.name,
+          src:`assets/mascots/${encodeURIComponent(dir.name)}/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
+        }))
+        .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
+
+      return {
+        id:dir.name,
+        title:conceptTitleFromFolder(dir.name),
+        mascots
+      };
+    }));
+
+    concepts.push(...folderConcepts.filter(c => Array.isArray(c.mascots) && c.mascots.length > 0));
+    return concepts.filter(c => Array.isArray(c.mascots) && c.mascots.length > 0);
   }
 
-  function renderMascotPicker(){
+  async function loadConceptsFromManifest(){
+    try{
+      const res = await fetch(`assets/mascots.json?_=${Date.now()}`, {cache:'no-store'});
+      if(!res.ok) return [];
+      const data = await res.json();
+
+      if(Array.isArray(data?.concepts)){
+        return data.concepts
+          .map((c, index) => ({
+            id:c.id || c.title || `concept-${index+1}`,
+            title:c.title || conceptTitleFromFolder(c.id),
+            mascots:(c.mascots || [])
+              .map((m, i) => typeof m === 'string'
+                ? {name:m.split('/').pop(), src:m}
+                : {name:m.name || `Maskot ${i+1}`, src:m.src})
+              .filter(m => m.src)
+          }))
+          .filter(c => c.mascots.length > 0);
+      }
+
+      // Backward-compatible V54 flat manifest -> General.
+      const items = Array.isArray(data) ? data : data?.mascots;
+      if(Array.isArray(items) && items.length){
+        const mascots = items
+          .map((item,index) => typeof item === 'string'
+            ? {name:item.split('/').pop(), src:item}
+            : {name:item.name || `Maskot ${index+1}`, src:item.src})
+          .filter(m => m.src);
+
+        return mascots.length ? [{id:'general', title:'Genel', mascots}] : [];
+      }
+    }catch(e){}
+    return [];
+  }
+
+  function renderConceptPicker(){
+    if(!conceptTrack) return;
+    conceptTrack.innerHTML = '';
+
+    mascotConcepts
+      .filter(c => Array.isArray(c.mascots) && c.mascots.length > 0)
+      .forEach(concept => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'concept-chip' + (concept.id === activeConceptId ? ' is-selected' : '');
+        btn.setAttribute('role','tab');
+        btn.setAttribute('aria-selected', concept.id === activeConceptId ? 'true' : 'false');
+        btn.textContent = concept.title;
+
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          activeConceptId = concept.id;
+          renderConceptPicker();
+          renderMascotPicker(concept.mascots);
+        });
+
+        conceptTrack.appendChild(btn);
+      });
+  }
+
+  function renderMascotPicker(options){
     if(!mascotTrack) return;
     mascotTrack.innerHTML = '';
 
-    mascotOptions.forEach((item, index) => {
-      const src = item.src;
-      const name = item.name || `Maskot ${index + 1}`;
+    mascotOptions = (Array.isArray(options) ? options : []).filter(item => item && item.src);
 
+    mascotOptions.forEach((item, index) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'mascot-option' + (index === 0 ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
-      btn.setAttribute('aria-label', name);
+      btn.setAttribute('aria-label', item.name || `Maskot ${index + 1}`);
 
       const img = document.createElement('img');
-      img.src = src;
+      img.src = item.src;
       img.alt = '';
       img.draggable = false;
 
       btn.appendChild(img);
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', e => {
         e.stopPropagation();
-        selectedMascotSrc = src;
+        selectedMascotSrc = item.src;
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
@@ -369,47 +476,48 @@
 
       mascotTrack.appendChild(btn);
     });
+
+    if(mascotOptions.length){
+      selectedMascotSrc = mascotOptions[0].src;
+      crossfadeFrame(selectedMascotSrc);
+    }
   }
 
   async function loadMascotOptions(){
-    // 1. Always try live GitHub contents first.
-    let live = await discoverLiveMascots();
+    let concepts = await discoverConceptsFromGitHub();
 
-    // 2. If GitHub API is temporarily unavailable, fall back to manifest.
-    if(!live.length){
-      try{
-        const res = await fetch(`assets/mascots.json?_=${Date.now()}`, {cache:'no-store'});
-        if(res.ok){
-          const data = await res.json();
-          const items = Array.isArray(data) ? data : data.mascots;
-          if(Array.isArray(items)){
-            live = items
-              .filter(item => item && item.src)
-              .map(item => ({
-                name:item.name || item.src.split('/').pop(),
-                src:item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`
-              }));
-          }
-        }
-      }catch(e){}
+    if(!concepts.length){
+      concepts = await loadConceptsFromManifest();
     }
 
-    // 3. Absolute fallback keeps the initial three visible.
-    if(!live.length){
-      live = [
-        {name:'mascot_01.png', src:'assets/mascots/mascot_01.png?v=54'},
-        {name:'mascot_02.png', src:'assets/mascots/mascot_02.png?v=54'},
-        {name:'mascot_03.png', src:'assets/mascots/mascot_03.png?v=54'}
-      ];
+    // V54 safety fallback.
+    if(!concepts.length){
+      concepts = [{
+        id:'kurumsal',
+        title:'Kurumsal',
+        mascots:[
+          {name:'mascot_01.png', src:'assets/mascots/kurumsal/mascot_01.png?v=58'},
+          {name:'mascot_02.png', src:'assets/mascots/kurumsal/mascot_02.png?v=58'},
+          {name:'mascot_03.png', src:'assets/mascots/kurumsal/mascot_03.png?v=58'}
+        ]
+      }];
     }
 
-    mascotOptions = live;
-    selectedMascotSrc = mascotOptions[0].src;
-    crossfadeFrame(selectedMascotSrc);
-    renderMascotPicker();
+    mascotConcepts = concepts
+      .map(c => ({...c, mascots:(c.mascots || []).filter(m => m && m.src)}))
+      .filter(c => c.mascots.length > 0);
+
+    if(!activeConceptId || !mascotConcepts.some(c => c.id === activeConceptId)){
+      activeConceptId = mascotConcepts[0]?.id || null;
+    }
+
+    const active = mascotConcepts.find(c => c.id === activeConceptId) || mascotConcepts[0];
+    renderConceptPicker();
+    renderMascotPicker(active?.mascots || []);
 
     if(refreshMascotsBtn){
-      refreshMascotsBtn.title = `${mascotOptions.length} maskot bulundu`;
+      const total = mascotConcepts.reduce((sum,c) => sum + c.mascots.length, 0);
+      refreshMascotsBtn.title = `${mascotConcepts.length} konsept • ${total} maskot`;
     }
   }
 
@@ -418,6 +526,10 @@
     const target = Number(nextZoom);
 
     if(target === 0.5){
+      if(cameraFacing === 'user'){
+        showToast('Ön kamerada 0.5× kullanılamıyor');
+        return;
+      }
       if(!wideRearDeviceId){
         showToast('Bu cihazda gerçek geniş açı lens görünmüyor');
         return;
@@ -431,7 +543,7 @@
         wideMode = true;
         cameraZoom = 0.5;
       }
-      video.style.transform = 'scale(1)';
+      applyVideoTransform();
       updateCameraButtons();
       return;
     }
@@ -458,7 +570,7 @@
       } catch(e){}
     }
     if(usedHardware){
-      video.style.transform = 'scale(1)';
+      applyVideoTransform();
     } else {
       applyDigitalCameraZoom();
     }
@@ -479,7 +591,15 @@
     captureCanvas.height = ch;
     const ctx = captureCanvas.getContext('2d');
     ctx.clearRect(0,0,cw,ch);
-    ctx.drawImage(video, dx, dy, drawW, drawH);
+    if(cameraFacing === 'user'){
+      ctx.save();
+      ctx.translate(cw, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, dx, dy, drawW, drawH);
+      ctx.restore();
+    } else {
+      ctx.drawImage(video, dx, dy, drawW, drawH);
+    }
 
     if(placed){
       const img = visibleLayer();
@@ -643,6 +763,23 @@
     await setCameraZoom(Number(btn.dataset.zoom));
   }));
 
+  cameraFlipBtn?.addEventListener('click', async e => {
+    e.stopPropagation();
+
+    if(recording){
+      showToast('Kayıt sırasında kamera değiştirilemez');
+      return;
+    }
+
+    cameraFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    cameraZoom = 1.0;
+    wideMode = false;
+    currentDeviceId = cameraFacing === 'environment' ? defaultRearDeviceId : null;
+
+    showToast(cameraFacing === 'user' ? 'Ön kamera açılıyor' : 'Arka kamera açılıyor');
+    await startCamera();
+  });
+
   photoBtn.addEventListener('click', capturePhoto);
 
   recordBtn.addEventListener('click', e => {
@@ -662,7 +799,7 @@
   videoPreview.addEventListener('click', e => { if(e.target === videoPreview) closeVideoPreview(); });
 
   arView.addEventListener('click', async e => {
-    if(e.target.closest('.premium-camera-bar') || e.target.closest('.photo-preview') || e.target.closest('.error-box')) return;
+    if(e.target.closest('.premium-camera-bar') || e.target.closest('.mascot-picker') || e.target.closest('.photo-preview') || e.target.closest('.error-box')) return;
     if(!placed) await placeMascot(e.clientX, e.clientY);
   });
 
@@ -702,7 +839,6 @@
   });
 
   updateCameraButtons();
-  bindStaticMascotOptions();
   loadMascotOptions();
 
   // V52: no service worker registration, preventing stale picker assets.

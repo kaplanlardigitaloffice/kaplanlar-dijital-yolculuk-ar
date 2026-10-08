@@ -1,15 +1,28 @@
-# Kaplanlar WebAR V54 — Live Assets
+# Kaplanlar WebAR V58 — Doğru Konsept Klasör Yapısı
 
-Bu sürüm manifest bağımlılığını kaldırır.
+Bu paket V57'nin düzenlenmiş halidir.
 
-Uygulama her açılışta doğrudan public GitHub repository içeriğini okur:
-- `assets/mascots/` içindeki tüm PNG/JPG/JPEG/WEBP dosyaları otomatik seçenek olur.
-- `assets/` kökünde adı `mascot_` veya `maskot_` ile başlayan görseller de otomatik seçenek olur.
-- Dosya SHA'sı URL'e eklenerek browser cache'i kırılır.
-- GitHub API geçici olarak erişilemezse `assets/mascots.json` fallback'i kullanılır.
-- O da yoksa ilk 3 maskot gösterilir.
+## Hazır klasör yapısı
 
-En sorunsuz kullanım:
-Yeni maskotları doğrudan `assets/mascots/` klasörüne atın.
-Dosya adının ne olduğu önemli değildir.
-GitHub Pages deployment tamamlandıktan sonra uygulamada Yenile'ye basın.
+assets/
+└─ mascots/
+   ├─ kurumsal/
+   │  ├─ mascot_01.png
+   │  ├─ mascot_02.png
+   │  └─ mascot_03.png
+   ├─ 90lar/
+   │  └─ .gitkeep
+   ├─ lansman/
+   │  └─ .gitkeep
+   └─ ofis/
+      └─ .gitkeep
+
+## Davranış
+- Mevcut 3 maskot artık **Kurumsal** konseptindedir.
+- `90lar`, `lansman`, `ofis` klasörleri boş olduğu için uygulamada görünmez.
+- Bu klasörlerden birine PNG/JPG/JPEG/WEBP eklediğin anda ilgili konsept görünür.
+- `.gitkeep` dosyaları uygulamada maskot sayılmaz.
+- `assets/mascots/` kökünde maskot kalmadığı için **Genel** konsepti görünmez.
+
+Örnek:
+`assets/mascots/90lar/dj.png` eklenirse uygulamada **90'lar** konsepti görünür.
