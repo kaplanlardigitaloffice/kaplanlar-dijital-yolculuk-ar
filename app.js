@@ -279,194 +279,135 @@
   }
 
 
-  function bindStaticMascotOptions(){
-    if(!mascotTrack) return;
+  const EMBEDDED_CONCEPTS = [
+    {
+      id:'kurumsal',
+      title:'Kurumsal',
+      mascots:[
+        {name:'mascot_01.png', src:'assets/mascots/kurumsal/mascot_01.png'},
+        {name:'mascot_02.png', src:'assets/mascots/kurumsal/mascot_02.png'},
+        {name:'mascot_03.png', src:'assets/mascots/kurumsal/mascot_03.png'},
+        {name:'mascot_04.png', src:'assets/mascots/kurumsal/mascot_04.png'},
+        {name:'mascot_05.png', src:'assets/mascots/kurumsal/mascot_05.png'},
+        {name:'mascot_06.png', src:'assets/mascots/kurumsal/mascot_06.png'},
+        {name:'mascot_07.png', src:'assets/mascots/kurumsal/mascot_07.png'},
+        {name:'mascot_08.png', src:'assets/mascots/kurumsal/mascot_08.png'},
+        {name:'mascot_09.png', src:'assets/mascots/kurumsal/mascot_09.png'},
+        {name:'mascot_10.png', src:'assets/mascots/kurumsal/mascot_10.png'},
+        {name:'mascot_11.png', src:'assets/mascots/kurumsal/mascot_11.png'}
+      ]
+    },
+    {
+      id:'90sParty',
+      title:"90's Party",
+      mascots:[
+        {name:'mascot_90_01.png', src:'assets/mascots/90lar/mascot_90_01.png'}
+      ]
+    }
+  ];
 
-    mascotTrack.querySelectorAll('.mascot-option').forEach((btn, index) => {
-      if(btn.dataset.bound === '1') return;
-      btn.dataset.bound = '1';
-
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const src = btn.dataset.src;
-        if(!src) return;
-
-        selectedMascotSrc = src + `?v=${Date.now()}`;
-        crossfadeFrame(selectedMascotSrc);
-
-        mascotTrack.querySelectorAll('.mascot-option')
-          .forEach(el => el.classList.remove('is-selected'));
-        btn.classList.add('is-selected');
-      });
+  async function imageExists(src){
+    return await new Promise(resolve => {
+      const img = new Image();
+      const timeout = setTimeout(() => resolve(false), 4000);
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        resolve(false);
+      };
+      img.src = src + (src.includes('?') ? '&' : '?') + `check=${Date.now()}`;
     });
   }
 
-  const GH_REPO = 'kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar';
+  async function loadConcepts(){
+    // The concept definitions are local and deterministic. No GitHub API,
+    // GitHub Actions or JSON fetch is required.
+    const result = [];
 
-  function isImageFile(name){
-    return /\.(png|jpg|jpeg|webp)$/i.test(String(name || ''));
-  }
-
-  function conceptTitleFromFolder(folder){
-    const raw = decodeURIComponent(String(folder || '')).replace(/[-_]+/g, ' ').trim();
-    const map = {
-      '90s': "90'lar",
-      '90 lar': "90'lar",
-      '90lar': "90'lar",
-      'corporate': 'Kurumsal',
-      'kurumsal': 'Kurumsal',
-      'launch': 'Lansman',
-      'lansman': 'Lansman',
-      'office': 'Ofis',
-      'ofis': 'Ofis',
-      'digital': 'Dijital',
-      'dijital': 'Dijital',
-      'celebration': 'Kutlama',
-      'kutlama': 'Kutlama'
-    };
-    const key = raw.toLowerCase();
-    if(map[key]) return map[key];
-    return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Genel';
-  }
-
-  async function githubFolder(path){
-    try{
-      const url = `https://api.github.com/repos/${GH_REPO}/contents/${path}?_=${Date.now()}`;
-      const res = await fetch(url, {
-        cache:'no-store',
-        headers:{'Accept':'application/vnd.github+json'}
-      });
-      if(!res.ok) return [];
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    }catch(e){
-      return [];
-    }
-  }
-
-  async function discoverConceptsFromGitHub(){
-    const rootEntries = await githubFolder('assets/mascots');
-    const concepts = [];
-
-    // Existing V54 structure stays valid:
-    // images directly under assets/mascots appear as "Genel".
-    const flatMascots = rootEntries
-      .filter(item => item?.type === 'file' && isImageFile(item.name))
-      .map(item => ({
-        name:item.name,
-        src:`assets/mascots/${encodeURIComponent(item.name)}?sha=${String(item.sha || '').slice(0,12)}`
-      }))
-      .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
-
-    if(flatMascots.length > 0){
-      concepts.push({ id:'general', title:'Genel', mascots:flatMascots });
-    }
-
-    // Optional subfolders become concepts. Empty folders are never shown.
-    const dirs = rootEntries.filter(item => item?.type === 'dir');
-    const folderConcepts = await Promise.all(dirs.map(async dir => {
-      const files = await githubFolder(`assets/mascots/${encodeURIComponent(dir.name)}`);
-      const mascots = files
-        .filter(file => file?.type === 'file' && isImageFile(file.name))
-        .map(file => ({
-          name:file.name,
-          src:`assets/mascots/${encodeURIComponent(dir.name)}/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
+    for(const concept of EMBEDDED_CONCEPTS){
+      const checked = await Promise.all(
+        concept.mascots.map(async mascot => ({
+          ...mascot,
+          exists: await imageExists(mascot.src)
         }))
-        .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
+      );
 
-      return {
-        id:dir.name,
-        title:conceptTitleFromFolder(dir.name),
-        mascots
-      };
-    }));
+      const validMascots = checked
+        .filter(item => item.exists)
+        .map(({exists, ...item}) => item);
 
-    concepts.push(...folderConcepts.filter(c => Array.isArray(c.mascots) && c.mascots.length > 0));
-    return concepts.filter(c => Array.isArray(c.mascots) && c.mascots.length > 0);
+      // Empty concepts are intentionally hidden.
+      if(validMascots.length){
+        result.push({
+          id:concept.id,
+          title:concept.title,
+          mascots:validMascots
+        });
+      }
+    }
+
+    return result;
   }
 
-  async function loadConceptsFromManifest(){
-    try{
-      const res = await fetch(`assets/mascots.json?_=${Date.now()}`, {cache:'no-store'});
-      if(!res.ok) return [];
-      const data = await res.json();
-
-      if(Array.isArray(data?.concepts)){
-        return data.concepts
-          .map((c, index) => ({
-            id:c.id || c.title || `concept-${index+1}`,
-            title:c.title || conceptTitleFromFolder(c.id),
-            mascots:(c.mascots || [])
-              .map((m, i) => typeof m === 'string'
-                ? {name:m.split('/').pop(), src:m}
-                : {name:m.name || `Maskot ${i+1}`, src:m.src})
-              .filter(m => m.src)
-          }))
-          .filter(c => c.mascots.length > 0);
-      }
-
-      // Backward-compatible V54 flat manifest -> General.
-      const items = Array.isArray(data) ? data : data?.mascots;
-      if(Array.isArray(items) && items.length){
-        const mascots = items
-          .map((item,index) => typeof item === 'string'
-            ? {name:item.split('/').pop(), src:item}
-            : {name:item.name || `Maskot ${index+1}`, src:item.src})
-          .filter(m => m.src);
-
-        return mascots.length ? [{id:'general', title:'Genel', mascots}] : [];
-      }
-    }catch(e){}
-    return [];
-  }
 
   function renderConceptPicker(){
     if(!conceptTrack) return;
     conceptTrack.innerHTML = '';
 
-    mascotConcepts
-      .filter(c => Array.isArray(c.mascots) && c.mascots.length > 0)
-      .forEach(concept => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'concept-chip' + (concept.id === activeConceptId ? ' is-selected' : '');
-        btn.setAttribute('role','tab');
-        btn.setAttribute('aria-selected', concept.id === activeConceptId ? 'true' : 'false');
-        btn.textContent = concept.title;
+    const visibleConcepts = mascotConcepts
+      .filter(c => Array.isArray(c.mascots) && c.mascots.length > 0);
 
-        btn.addEventListener('click', e => {
-          e.stopPropagation();
-          activeConceptId = concept.id;
-          renderConceptPicker();
-          renderMascotPicker(concept.mascots);
-        });
+    visibleConcepts.forEach(concept => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'concept-chip' + (concept.id === activeConceptId ? ' is-selected' : '');
+      btn.setAttribute('role','tab');
+      btn.setAttribute('aria-selected', concept.id === activeConceptId ? 'true' : 'false');
+      btn.textContent = concept.title;
 
-        conceptTrack.appendChild(btn);
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        activeConceptId = concept.id;
+        renderConceptPicker();
+        renderMascotPicker(concept.mascots);
       });
+
+      conceptTrack.appendChild(btn);
+    });
+
+    conceptTrack.classList.toggle('is-hidden', visibleConcepts.length === 0);
   }
 
   function renderMascotPicker(options){
     if(!mascotTrack) return;
     mascotTrack.innerHTML = '';
 
-    mascotOptions = (Array.isArray(options) ? options : []).filter(item => item && item.src);
+    mascotOptions = (Array.isArray(options) ? options : [])
+      .filter(item => item && item.src);
 
     mascotOptions.forEach((item, index) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'mascot-option' + (index === 0 ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
-      btn.setAttribute('aria-label', item.name || `Maskot ${index + 1}`);
+      btn.setAttribute('aria-label', item.name || `Maskot ${index+1}`);
 
       const img = document.createElement('img');
-      img.src = item.src;
+      img.src = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
       img.alt = '';
       img.draggable = false;
 
       btn.appendChild(img);
+
       btn.addEventListener('click', e => {
+        e.preventDefault();
         e.stopPropagation();
-        selectedMascotSrc = item.src;
+
+        selectedMascotSrc = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
@@ -478,42 +419,36 @@
     });
 
     if(mascotOptions.length){
-      selectedMascotSrc = mascotOptions[0].src;
+      selectedMascotSrc = mascotOptions[0].src + (mascotOptions[0].src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
       crossfadeFrame(selectedMascotSrc);
     }
   }
 
   async function loadMascotOptions(){
-    let concepts = await discoverConceptsFromGitHub();
-
-    if(!concepts.length){
-      concepts = await loadConceptsFromManifest();
-    }
-
-    // V54 safety fallback.
-    if(!concepts.length){
-      concepts = [{
-        id:'kurumsal',
-        title:'Kurumsal',
-        mascots:[
-          {name:'mascot_01.png', src:'assets/mascots/kurumsal/mascot_01.png?v=58'},
-          {name:'mascot_02.png', src:'assets/mascots/kurumsal/mascot_02.png?v=58'},
-          {name:'mascot_03.png', src:'assets/mascots/kurumsal/mascot_03.png?v=58'}
-        ]
-      }];
-    }
+    const concepts = await loadConcepts();
 
     mascotConcepts = concepts
-      .map(c => ({...c, mascots:(c.mascots || []).filter(m => m && m.src)}))
+      .map(c => ({
+        ...c,
+        mascots:(c.mascots || []).filter(m => m && m.src)
+      }))
       .filter(c => c.mascots.length > 0);
 
+    if(!mascotConcepts.length){
+      conceptTrack?.classList.add('is-hidden');
+      mascotTrack.innerHTML = '';
+      showToast('Maskot dosyaları bulunamadı');
+      return;
+    }
+
     if(!activeConceptId || !mascotConcepts.some(c => c.id === activeConceptId)){
-      activeConceptId = mascotConcepts[0]?.id || null;
+      activeConceptId = mascotConcepts[0].id;
     }
 
     const active = mascotConcepts.find(c => c.id === activeConceptId) || mascotConcepts[0];
+
     renderConceptPicker();
-    renderMascotPicker(active?.mascots || []);
+    renderMascotPicker(active.mascots);
 
     if(refreshMascotsBtn){
       const total = mascotConcepts.reduce((sum,c) => sum + c.mascots.length, 0);

@@ -1,28 +1,22 @@
-# Kaplanlar WebAR V58 — Doğru Konsept Klasör Yapısı
+# Kaplanlar WebAR V60 — Embedded Concepts
 
-Bu paket V57'nin düzenlenmiş halidir.
+Bu sürüm konsept ve maskot listesini GitHub API, GitHub Action veya mascots.json üzerinden okumaz.
 
-## Hazır klasör yapısı
+Doğrudan aşağıdaki dosyaları kontrol eder:
 
-assets/
-└─ mascots/
-   ├─ kurumsal/
-   │  ├─ mascot_01.png
-   │  ├─ mascot_02.png
-   │  └─ mascot_03.png
-   ├─ 90lar/
-   │  └─ .gitkeep
-   ├─ lansman/
-   │  └─ .gitkeep
-   └─ ofis/
-      └─ .gitkeep
+Kurumsal:
+- assets/mascots/kurumsal/mascot_01.png
+- ...
+- assets/mascots/kurumsal/mascot_11.png
 
-## Davranış
-- Mevcut 3 maskot artık **Kurumsal** konseptindedir.
-- `90lar`, `lansman`, `ofis` klasörleri boş olduğu için uygulamada görünmez.
-- Bu klasörlerden birine PNG/JPG/JPEG/WEBP eklediğin anda ilgili konsept görünür.
-- `.gitkeep` dosyaları uygulamada maskot sayılmaz.
-- `assets/mascots/` kökünde maskot kalmadığı için **Genel** konsepti görünmez.
+90's Party:
+- assets/mascots/90lar/mascot_90_01.png
 
-Örnek:
-`assets/mascots/90lar/dj.png` eklenirse uygulamada **90'lar** konsepti görünür.
+Davranış:
+- Dosya gerçekten mevcutsa maskot gösterilir.
+- Konseptte tek bir geçerli görsel bile yoksa konsept gizlenir.
+- Kurumsal klasöründe 11 dosyanın hepsi mevcutsa 11 seçenek görünür.
+- GitHub API / Actions / JSON parse / cache sorunları devreden çıkarılmıştır.
+
+Yeni maskot eklerken bu sürümde app.js içindeki EMBEDDED_CONCEPTS listesine yol eklemek gerekir.
+Bu sürüm öncelikle mevcut konsept ekranını kararlı şekilde çalıştırmak için hazırlanmıştır.

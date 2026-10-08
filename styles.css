@@ -3122,3 +3122,36 @@ body.landscape-preferred .placement-guide{
     border-radius:15px;
   }
 }
+
+
+/* V59 — reliable concept selector visibility */
+.concept-track{
+  min-height:38px !important;
+  display:flex !important;
+  align-items:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:90 !important;
+}
+.concept-track.is-hidden{
+  display:none !important;
+}
+.concept-chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+
+/* V60 — deterministic local concepts */
+.concept-track{
+  min-height:38px !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+.concept-track.is-hidden{
+  display:none !important;
+}
