@@ -6,10 +6,10 @@
   const videoStartBtn = $('#videoStartBtn'), enterArPanel = $('#enterArPanel'), enterArBtn = $('#enterArBtn');
 
   const video = $('#camera');
-  const quickPhotoBtn = $('#quickPhotoBtn'), conceptTrack = $('#conceptTrack'), mascotTrack = $('#mascotTrack'), refreshMascotsBtn = $('#refreshMascotsBtn');
+  const quickPhotoBtn = $('#quickPhotoBtn'), mascotTrack = $('#mascotTrack'), refreshMascotsBtn = $('#refreshMascotsBtn');
   const guide = $('#placementGuide'), anchor = $('#arAnchor');
   const mascotA = $('#mascotA'), mascotB = $('#mascotB');
-  const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn'), cameraFlipBtn = $('#cameraFlipBtn');
+  const photoBtn = $('#photoBtn'), recordBtn = $('#recordBtn');
   const lens05Btn = $('#lens05Btn'), lens1Btn = $('#lens1Btn'), lens15Btn = $('#lens15Btn'), lens2Btn = $('#lens2Btn');
   const lensButtons = [lens05Btn, lens1Btn, lens15Btn, lens2Btn].filter(Boolean);
   const resizeHint = $('#resizeHint');
@@ -22,10 +22,8 @@
   const videoPreview = $('#videoPreview'), videoPreviewPlayer = $('#videoPreviewPlayer');
   const saveVideoBtn = $('#saveVideoBtn'), shareVideoBtn = $('#shareVideoBtn'), closeVideoPreviewBtn = $('#closeVideoPreviewBtn');
 
-  let selectedMascotSrc = 'assets/mascots/kurumsal/mascot_01.png';
+  let selectedMascotSrc = 'assets/mascots/mascot_01.png';
   let mascotOptions = [];
-  let mascotConcepts = [];
-  let activeConceptId = null;
 
   let stream = null, cameraTrack = null, placed = false, scale = 1.12, drag = null, pinchDistance = null;
   let activeLayer = 'A', shotTimers = [], quietTimer = null;
@@ -34,7 +32,6 @@
   let recordedBlob = null, recordedObjectUrl = null, recordedFileName = '';
 
   let currentDeviceId = null, defaultRearDeviceId = null, wideRearDeviceId = null;
-  let cameraFacing = 'environment';
   let cameraZoom = 1.0, cameraZoomMin = 1.0, cameraZoomMax = 3.0;
   let wideMode = false;
 
@@ -105,42 +102,25 @@
 
 
   function updateCameraButtons(){
-    const isFront = cameraFacing === 'user';
-
     lensButtons.forEach(btn => {
       const z = Number(btn.dataset.zoom || 1);
       btn.classList.toggle('is-active', Math.abs(z - cameraZoom) < 0.06);
-
       if(z === 0.5){
-        const canUseWide = !isFront && !!wideRearDeviceId;
-        btn.classList.toggle('is-hidden', !canUseWide);
-        btn.disabled = !canUseWide;
+        btn.classList.toggle('is-hidden', !wideRearDeviceId);
+        btn.disabled = !wideRearDeviceId;
       } else {
         btn.disabled = false;
       }
     });
-
-    if(cameraFlipBtn){
-      cameraFlipBtn.classList.toggle('is-front', isFront);
-      const label = cameraFlipBtn.querySelector('.camera-flip-label');
-      if(label) label.textContent = isFront ? 'Arka' : 'Ön';
-      cameraFlipBtn.setAttribute('aria-label', isFront ? 'Arka kameraya geç' : 'Ön kameraya geç');
-    }
 
     recordBtn.classList.toggle('is-recording', recording);
     recordBtn.querySelector('.record-label').textContent = recording ? 'Durdur' : 'Kayıt';
     recordBtn.setAttribute('aria-label', recording ? 'Video kaydını durdur' : 'Video kaydı başlat');
   }
 
-  function applyVideoTransform(){
-    const zoomScale = cameraZoom >= 1 ? cameraZoom : 1;
-    const mirror = cameraFacing === 'user' ? -1 : 1;
-    video.style.transformOrigin = 'center center';
-    video.style.transform = `scaleX(${mirror}) scale(${zoomScale})`;
-  }
-
   function applyDigitalCameraZoom(){
-    applyVideoTransform();
+    video.style.transformOrigin = 'center center';
+    video.style.transform = `scale(${cameraZoom >= 1 ? cameraZoom : 1})`;
     updateCameraButtons();
   }
 
@@ -179,14 +159,8 @@
         width:{ ideal: 1920 },
         height:{ ideal: 1080 }
       };
-
-      if(cameraFacing === 'user'){
-        videoConstraints.facingMode = { ideal:'user' };
-      } else if(currentDeviceId){
-        videoConstraints.deviceId = { exact: currentDeviceId };
-      } else {
-        videoConstraints.facingMode = { ideal:'environment' };
-      }
+      if(currentDeviceId) videoConstraints.deviceId = { exact: currentDeviceId };
+      else videoConstraints.facingMode = { ideal:'environment' };
 
       stream = await navigator.mediaDevices.getUserMedia({ audio:false, video: videoConstraints });
       video.srcObject = stream;
@@ -196,16 +170,11 @@
       await discoverVideoDevices();
       await refreshTrackCapabilities();
 
-      if(cameraFacing === 'user'){
-        wideMode = false;
-        cameraZoom = Math.max(1, cameraZoom);
-      } else if(wideMode && !wideRearDeviceId){
+      if(wideMode && !wideRearDeviceId){
         wideMode = false;
         cameraZoom = 1.0;
+        applyDigitalCameraZoom();
       }
-
-      applyVideoTransform();
-      updateCameraButtons();
     } catch(err){
       errorBox.innerHTML = '<b>Kamera açılamadı.</b><br>HTTPS bağlantısını ve kamera iznini kontrol edin.';
       errorBox.classList.remove('is-hidden');
@@ -229,6 +198,7 @@
     anchor.classList.remove('is-placed');
 
     await startCamera();
+    bindStaticMascotOptions();
     await loadMascotOptions();
   }
 
@@ -249,8 +219,7 @@
     await loadMascotOptions();
     refreshMascotsBtn.textContent = 'Yenile';
     refreshMascotsBtn.disabled = false;
-    const totalMascots = mascotConcepts.reduce((sum,c) => sum + c.mascots.length, 0);
-    showToast(`${mascotConcepts.length} konsept • ${totalMascots} maskot`);
+    showToast(`${mascotOptions.length} maskot bulundu`);
   });
 
   enterArBtn?.addEventListener('click', openArExperience);
@@ -279,135 +248,118 @@
   }
 
 
-  const EMBEDDED_CONCEPTS = [
-    {
-      id:'kurumsal',
-      title:'Kurumsal',
-      mascots:[
-        {name:'mascot_01.png', src:'assets/mascots/kurumsal/mascot_01.png'},
-        {name:'mascot_02.png', src:'assets/mascots/kurumsal/mascot_02.png'},
-        {name:'mascot_03.png', src:'assets/mascots/kurumsal/mascot_03.png'},
-        {name:'mascot_04.png', src:'assets/mascots/kurumsal/mascot_04.png'},
-        {name:'mascot_05.png', src:'assets/mascots/kurumsal/mascot_05.png'},
-        {name:'mascot_06.png', src:'assets/mascots/kurumsal/mascot_06.png'},
-        {name:'mascot_07.png', src:'assets/mascots/kurumsal/mascot_07.png'},
-        {name:'mascot_08.png', src:'assets/mascots/kurumsal/mascot_08.png'},
-        {name:'mascot_09.png', src:'assets/mascots/kurumsal/mascot_09.png'},
-        {name:'mascot_10.png', src:'assets/mascots/kurumsal/mascot_10.png'},
-        {name:'mascot_11.png', src:'assets/mascots/kurumsal/mascot_11.png'}
-      ]
-    },
-    {
-      id:'90sParty',
-      title:"90's Party",
-      mascots:[
-        {name:'mascot_90_01.png', src:'assets/mascots/90lar/mascot_90_01.png'}
-      ]
-    }
-  ];
+  function bindStaticMascotOptions(){
+    if(!mascotTrack) return;
 
-  async function imageExists(src){
-    return await new Promise(resolve => {
-      const img = new Image();
-      const timeout = setTimeout(() => resolve(false), 4000);
-      img.onload = () => {
-        clearTimeout(timeout);
-        resolve(true);
-      };
-      img.onerror = () => {
-        clearTimeout(timeout);
-        resolve(false);
-      };
-      img.src = src + (src.includes('?') ? '&' : '?') + `check=${Date.now()}`;
+    mascotTrack.querySelectorAll('.mascot-option').forEach((btn, index) => {
+      if(btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const src = btn.dataset.src;
+        if(!src) return;
+
+        selectedMascotSrc = src + `?v=${Date.now()}`;
+        crossfadeFrame(selectedMascotSrc);
+
+        mascotTrack.querySelectorAll('.mascot-option')
+          .forEach(el => el.classList.remove('is-selected'));
+        btn.classList.add('is-selected');
+      });
     });
   }
 
-  async function loadConcepts(){
-    // The concept definitions are local and deterministic. No GitHub API,
-    // GitHub Actions or JSON fetch is required.
-    const result = [];
+  const GH_REPO = 'kaplanlardigitaloffice/kaplanlar-dijital-yolculuk-ar';
 
-    for(const concept of EMBEDDED_CONCEPTS){
-      const checked = await Promise.all(
-        concept.mascots.map(async mascot => ({
-          ...mascot,
-          exists: await imageExists(mascot.src)
-        }))
-      );
+  function isMascotImage(name, folder){
+    const n = String(name || '').toLowerCase();
+    if(!/\.(png|jpg|jpeg|webp)$/.test(n)) return false;
 
-      const validMascots = checked
-        .filter(item => item.exists)
-        .map(({exists, ...item}) => item);
+    // Everything inside assets/mascots is considered a selectable mascot.
+    if(folder === 'mascots') return true;
 
-      // Empty concepts are intentionally hidden.
-      if(validMascots.length){
-        result.push({
-          id:concept.id,
-          title:concept.title,
-          mascots:validMascots
+    // In assets root, accept mascot/maskot-named files but exclude UI/legacy art.
+    if(/^(mascot|maskot)[-_].+\.(png|jpg|jpeg|webp)$/.test(n)) return true;
+    return false;
+  }
+
+  async function githubFolder(path){
+    try{
+      const url = `https://api.github.com/repos/${GH_REPO}/contents/${path}?_=${Date.now()}`;
+      const res = await fetch(url, {
+        cache:'no-store',
+        headers:{'Accept':'application/vnd.github+json'}
+      });
+      if(!res.ok) return [];
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  async function discoverLiveMascots(){
+    const [rootFiles, mascotFiles] = await Promise.all([
+      githubFolder('assets'),
+      githubFolder('assets/mascots')
+    ]);
+
+    const found = [];
+
+    for(const file of rootFiles){
+      if(file?.type === 'file' && isMascotImage(file.name, 'root')){
+        found.push({
+          name:file.name,
+          src:`assets/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
         });
       }
     }
 
-    return result;
+    for(const file of mascotFiles){
+      if(file?.type === 'file' && isMascotImage(file.name, 'mascots')){
+        found.push({
+          name:file.name,
+          src:`assets/mascots/${encodeURIComponent(file.name)}?sha=${String(file.sha || '').slice(0,12)}`
+        });
+      }
+    }
+
+    // De-dupe by filename + relative path and sort naturally.
+    const seen = new Set();
+    return found
+      .filter(item => {
+        const key = item.src.split('?')[0];
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a,b) => a.name.localeCompare(b.name, 'tr', {numeric:true}));
   }
 
-
-  function renderConceptPicker(){
-    if(!conceptTrack) return;
-    conceptTrack.innerHTML = '';
-
-    const visibleConcepts = mascotConcepts
-      .filter(c => Array.isArray(c.mascots) && c.mascots.length > 0);
-
-    visibleConcepts.forEach(concept => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'concept-chip' + (concept.id === activeConceptId ? ' is-selected' : '');
-      btn.setAttribute('role','tab');
-      btn.setAttribute('aria-selected', concept.id === activeConceptId ? 'true' : 'false');
-      btn.textContent = concept.title;
-
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        activeConceptId = concept.id;
-        renderConceptPicker();
-        renderMascotPicker(concept.mascots);
-      });
-
-      conceptTrack.appendChild(btn);
-    });
-
-    conceptTrack.classList.toggle('is-hidden', visibleConcepts.length === 0);
-  }
-
-  function renderMascotPicker(options){
+  function renderMascotPicker(){
     if(!mascotTrack) return;
     mascotTrack.innerHTML = '';
 
-    mascotOptions = (Array.isArray(options) ? options : [])
-      .filter(item => item && item.src);
-
     mascotOptions.forEach((item, index) => {
+      const src = item.src;
+      const name = item.name || `Maskot ${index + 1}`;
+
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'mascot-option' + (index === 0 ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
-      btn.setAttribute('aria-label', item.name || `Maskot ${index+1}`);
+      btn.setAttribute('aria-label', name);
 
       const img = document.createElement('img');
-      img.src = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
+      img.src = src;
       img.alt = '';
       img.draggable = false;
 
       btn.appendChild(img);
-
-      btn.addEventListener('click', e => {
-        e.preventDefault();
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
-
-        selectedMascotSrc = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
+        selectedMascotSrc = src;
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
@@ -417,42 +369,47 @@
 
       mascotTrack.appendChild(btn);
     });
-
-    if(mascotOptions.length){
-      selectedMascotSrc = mascotOptions[0].src + (mascotOptions[0].src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
-      crossfadeFrame(selectedMascotSrc);
-    }
   }
 
   async function loadMascotOptions(){
-    const concepts = await loadConcepts();
+    // 1. Always try live GitHub contents first.
+    let live = await discoverLiveMascots();
 
-    mascotConcepts = concepts
-      .map(c => ({
-        ...c,
-        mascots:(c.mascots || []).filter(m => m && m.src)
-      }))
-      .filter(c => c.mascots.length > 0);
-
-    if(!mascotConcepts.length){
-      conceptTrack?.classList.add('is-hidden');
-      mascotTrack.innerHTML = '';
-      showToast('Maskot dosyaları bulunamadı');
-      return;
+    // 2. If GitHub API is temporarily unavailable, fall back to manifest.
+    if(!live.length){
+      try{
+        const res = await fetch(`assets/mascots.json?_=${Date.now()}`, {cache:'no-store'});
+        if(res.ok){
+          const data = await res.json();
+          const items = Array.isArray(data) ? data : data.mascots;
+          if(Array.isArray(items)){
+            live = items
+              .filter(item => item && item.src)
+              .map(item => ({
+                name:item.name || item.src.split('/').pop(),
+                src:item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`
+              }));
+          }
+        }
+      }catch(e){}
     }
 
-    if(!activeConceptId || !mascotConcepts.some(c => c.id === activeConceptId)){
-      activeConceptId = mascotConcepts[0].id;
+    // 3. Absolute fallback keeps the initial three visible.
+    if(!live.length){
+      live = [
+        {name:'mascot_01.png', src:'assets/mascots/mascot_01.png?v=54'},
+        {name:'mascot_02.png', src:'assets/mascots/mascot_02.png?v=54'},
+        {name:'mascot_03.png', src:'assets/mascots/mascot_03.png?v=54'}
+      ];
     }
 
-    const active = mascotConcepts.find(c => c.id === activeConceptId) || mascotConcepts[0];
-
-    renderConceptPicker();
-    renderMascotPicker(active.mascots);
+    mascotOptions = live;
+    selectedMascotSrc = mascotOptions[0].src;
+    crossfadeFrame(selectedMascotSrc);
+    renderMascotPicker();
 
     if(refreshMascotsBtn){
-      const total = mascotConcepts.reduce((sum,c) => sum + c.mascots.length, 0);
-      refreshMascotsBtn.title = `${mascotConcepts.length} konsept • ${total} maskot`;
+      refreshMascotsBtn.title = `${mascotOptions.length} maskot bulundu`;
     }
   }
 
@@ -461,10 +418,6 @@
     const target = Number(nextZoom);
 
     if(target === 0.5){
-      if(cameraFacing === 'user'){
-        showToast('Ön kamerada 0.5× kullanılamıyor');
-        return;
-      }
       if(!wideRearDeviceId){
         showToast('Bu cihazda gerçek geniş açı lens görünmüyor');
         return;
@@ -478,7 +431,7 @@
         wideMode = true;
         cameraZoom = 0.5;
       }
-      applyVideoTransform();
+      video.style.transform = 'scale(1)';
       updateCameraButtons();
       return;
     }
@@ -505,7 +458,7 @@
       } catch(e){}
     }
     if(usedHardware){
-      applyVideoTransform();
+      video.style.transform = 'scale(1)';
     } else {
       applyDigitalCameraZoom();
     }
@@ -526,15 +479,7 @@
     captureCanvas.height = ch;
     const ctx = captureCanvas.getContext('2d');
     ctx.clearRect(0,0,cw,ch);
-    if(cameraFacing === 'user'){
-      ctx.save();
-      ctx.translate(cw, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, dx, dy, drawW, drawH);
-      ctx.restore();
-    } else {
-      ctx.drawImage(video, dx, dy, drawW, drawH);
-    }
+    ctx.drawImage(video, dx, dy, drawW, drawH);
 
     if(placed){
       const img = visibleLayer();
@@ -698,23 +643,6 @@
     await setCameraZoom(Number(btn.dataset.zoom));
   }));
 
-  cameraFlipBtn?.addEventListener('click', async e => {
-    e.stopPropagation();
-
-    if(recording){
-      showToast('Kayıt sırasında kamera değiştirilemez');
-      return;
-    }
-
-    cameraFacing = cameraFacing === 'environment' ? 'user' : 'environment';
-    cameraZoom = 1.0;
-    wideMode = false;
-    currentDeviceId = cameraFacing === 'environment' ? defaultRearDeviceId : null;
-
-    showToast(cameraFacing === 'user' ? 'Ön kamera açılıyor' : 'Arka kamera açılıyor');
-    await startCamera();
-  });
-
   photoBtn.addEventListener('click', capturePhoto);
 
   recordBtn.addEventListener('click', e => {
@@ -734,7 +662,7 @@
   videoPreview.addEventListener('click', e => { if(e.target === videoPreview) closeVideoPreview(); });
 
   arView.addEventListener('click', async e => {
-    if(e.target.closest('.premium-camera-bar') || e.target.closest('.mascot-picker') || e.target.closest('.photo-preview') || e.target.closest('.error-box')) return;
+    if(e.target.closest('.premium-camera-bar') || e.target.closest('.photo-preview') || e.target.closest('.error-box')) return;
     if(!placed) await placeMascot(e.clientX, e.clientY);
   });
 
@@ -774,6 +702,7 @@
   });
 
   updateCameraButtons();
+  bindStaticMascotOptions();
   loadMascotOptions();
 
   // V52: no service worker registration, preventing stale picker assets.
