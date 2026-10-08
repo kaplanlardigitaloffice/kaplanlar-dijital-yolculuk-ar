@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "concepts": [
+    {
+      "id": "kurumsal",
+      "title": "Kurumsal",
+      "mascots": [
+        {
+          "name": "mascot_01.png",
+          "src": "assets/mascots/kurumsal/mascot_01.png"
+        },
+        {
+          "name": "mascot_02.png",
+          "src": "assets/mascots/kurumsal/mascot_02.png"
+        },
+        {
+          "name": "mascot_03.png",
+          "src": "assets/mascots/kurumsal/mascot_03.png"
+        },{
+          "name": "mascot_04.png",
+          "src": "assets/mascots/kurumsal/mascot_01.png"
+        },
+        {
+          "name": "mascot_05.png",
+          "src": "assets/mascots/kurumsal/mascot_02.png"
+        },
+        {
+          "name": "mascot_06.png",
+          "src": "assets/mascots/kurumsal/mascot_03.png"
+        },{
+          "name": "mascot_03.png",
+          "src": "assets/mascots/kurumsal/mascot_03.png"
+        },
+	{
+          "name": "mascot_07.png",
+          "src": "assets/mascots/kurumsal/mascot_01.png"
+        },
+        {
+          "name": "mascot_08.png",
+          "src": "assets/mascots/kurumsal/mascot_02.png"
+        },
+
+        {
+          "name": "mascot_09.png",
+          "src": "assets/mascots/kurumsal/mascot_02.png"
+        },
+
+        {
+          "name": "mascot_11.png",
+          "src": "assets/mascots/kurumsal/mascot_02.png"
+        },
+      ]
+    },
+{
+      "id": "90sParty",
+      "title": "90's Party",
+      "mascots": [
+        {
+          "name": "mascot_90_01.png",
+          "src": "assets/mascots/90lar/mascot_90_01.png"
+        }
+      ]
+    }
+  ]
+}
