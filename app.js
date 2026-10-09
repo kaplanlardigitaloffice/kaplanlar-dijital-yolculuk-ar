@@ -279,77 +279,46 @@
   }
 
 
-  const EMBEDDED_CONCEPTS = [
-    {
-      id:'kurumsal',
-      title:'Kurumsal',
-      mascots:[
-        {name:'mascot_01.png', src:'assets/mascots/kurumsal/mascot_01.png'},
-        {name:'mascot_02.png', src:'assets/mascots/kurumsal/mascot_02.png'},
-        {name:'mascot_03.png', src:'assets/mascots/kurumsal/mascot_03.png'},
-        {name:'mascot_04.png', src:'assets/mascots/kurumsal/mascot_04.png'},
-        {name:'mascot_05.png', src:'assets/mascots/kurumsal/mascot_05.png'},
-        {name:'mascot_06.png', src:'assets/mascots/kurumsal/mascot_06.png'},
-        {name:'mascot_07.png', src:'assets/mascots/kurumsal/mascot_07.png'},
-        {name:'mascot_08.png', src:'assets/mascots/kurumsal/mascot_08.png'},
-        {name:'mascot_09.png', src:'assets/mascots/kurumsal/mascot_09.png'},
-        {name:'mascot_10.png', src:'assets/mascots/kurumsal/mascot_10.png'},
-        {name:'mascot_11.png', src:'assets/mascots/kurumsal/mascot_11.png'}
-      ]
-    },
-    {
-      id:'90sParty',
-      title:"90's Party",
-      mascots:[
-        {name:'mascot_90_01.png', src:'assets/mascots/90lar/mascot_90_01.png'}
-      ]
-    }
-  ];
-
   async function imageExists(src){
     return await new Promise(resolve => {
       const img = new Image();
-      const timeout = setTimeout(() => resolve(false), 4000);
-      img.onload = () => {
-        clearTimeout(timeout);
-        resolve(true);
-      };
-      img.onerror = () => {
-        clearTimeout(timeout);
-        resolve(false);
-      };
+      const timer = setTimeout(() => resolve(false), 5000);
+      img.onload = () => { clearTimeout(timer); resolve(true); };
+      img.onerror = () => { clearTimeout(timer); resolve(false); };
       img.src = src + (src.includes('?') ? '&' : '?') + `check=${Date.now()}`;
     });
   }
 
-  async function loadConcepts(){
-    // The concept definitions are local and deterministic. No GitHub API,
-    // GitHub Actions or JSON fetch is required.
-    const result = [];
+  async function loadConceptsFromJson(){
+    try{
+      const res = await fetch(`assets/mascots.json?v=${Date.now()}`, { cache:'no-store' });
+      if(!res.ok) return [];
+      const data = await res.json();
+      const rawConcepts = Array.isArray(data?.concepts) ? data.concepts : [];
+      const concepts = [];
 
-    for(const concept of EMBEDDED_CONCEPTS){
-      const checked = await Promise.all(
-        concept.mascots.map(async mascot => ({
-          ...mascot,
-          exists: await imageExists(mascot.src)
-        }))
-      );
+      for(const concept of rawConcepts){
+        const validMascots = [];
+        for(const [index,item] of (concept.mascots || []).entries()){
+          const mascot = typeof item === 'string'
+            ? {name:item.split('/').pop(), src:item}
+            : {name:item?.name || `Maskot ${index+1}`, src:item?.src};
+          if(mascot.src && await imageExists(mascot.src)) validMascots.push(mascot);
+        }
 
-      const validMascots = checked
-        .filter(item => item.exists)
-        .map(({exists, ...item}) => item);
-
-      // Empty concepts are intentionally hidden.
-      if(validMascots.length){
-        result.push({
-          id:concept.id,
-          title:concept.title,
-          mascots:validMascots
-        });
+        if(validMascots.length){
+          concepts.push({
+            id:concept.id || concept.title || `concept-${concepts.length+1}`,
+            title:concept.title || concept.id || `Konsept ${concepts.length+1}`,
+            mascots:validMascots
+          });
+        }
       }
+      return concepts;
+    }catch(e){
+      console.warn('mascots.json yüklenemedi', e);
+      return [];
     }
-
-    return result;
   }
 
 
@@ -425,28 +394,23 @@
   }
 
   async function loadMascotOptions(){
-    const concepts = await loadConcepts();
-
-    mascotConcepts = concepts
-      .map(c => ({
-        ...c,
-        mascots:(c.mascots || []).filter(m => m && m.src)
-      }))
-      .filter(c => c.mascots.length > 0);
+    mascotConcepts = await loadConceptsFromJson();
 
     if(!mascotConcepts.length){
+      activeConceptId = null;
       conceptTrack?.classList.add('is-hidden');
       mascotTrack.innerHTML = '';
-      showToast('Maskot dosyaları bulunamadı');
+      showToast('Gösterilecek maskot bulunamadı');
       return;
     }
+
+    conceptTrack?.classList.remove('is-hidden');
 
     if(!activeConceptId || !mascotConcepts.some(c => c.id === activeConceptId)){
       activeConceptId = mascotConcepts[0].id;
     }
 
     const active = mascotConcepts.find(c => c.id === activeConceptId) || mascotConcepts[0];
-
     renderConceptPicker();
     renderMascotPicker(active.mascots);
 
