@@ -1,48 +1,153 @@
 {
-  "version": 1,
-  "mascots": [
+  "version": 4,
+  "concepts": [
     {
-      "name": "mascot_01.png",
-      "src": "assets/mascots/mascot_01.png"
+      "id": "kurumsal",
+      "title": "Kurumsal",
+      "mascots": [
+        {
+          "name": "mascot_01.png",
+          "src": "assets/mascots/kurumsal/mascot_01.png"
+        },
+        {
+          "name": "mascot_03.png",
+          "src": "assets/mascots/kurumsal/mascot_03.png"
+        },
+        {
+          "name": "mascot_04.png",
+          "src": "assets/mascots/kurumsal/mascot_04.png"
+        },
+        {
+          "name": "mascot_05.png",
+          "src": "assets/mascots/kurumsal/mascot_05.png"
+        },
+        {
+          "name": "mascot_07.png",
+          "src": "assets/mascots/kurumsal/mascot_07.png"
+        },
+        {
+          "name": "mascot_09.png",
+          "src": "assets/mascots/kurumsal/mascot_09.png"
+        },
+        {
+          "name": "mascot_10.png",
+          "src": "assets/mascots/kurumsal/mascot_10.png"
+        },
+        {
+          "name": "mascot_11.png",
+          "src": "assets/mascots/kurumsal/mascot_11.png"
+        },
+        {
+          "name": "mascot_12.png",
+          "src": "assets/mascots/kurumsal/mascot_12.png"
+        },
+        {
+          "name": "mascot_13.png",
+          "src": "assets/mascots/kurumsal/mascot_13.png"
+        },
+        {
+          "name": "mascot_14.png",
+          "src": "assets/mascots/kurumsal/mascot_14.png"
+        }
+      ]
     },
     {
-      "name": "mascot_02.png",
-      "src": "assets/mascots/mascot_02.png"
-    },
-    {
-      "name": "mascot_03.png",
-      "src": "assets/mascots/mascot_03.png"
-    },
-    {
-      "name": "mascot_04.png",
-      "src": "assets/mascots/mascot_04.png"
-    },
-    {
-      "name": "mascot_06.png",
-      "src": "assets/mascots/mascot_06.png"
-    ,
-    {
-      "name": "mascot_06.png",
-      "src": "assets/mascots/mascot_06.png"
-    },
-    {
-      "name": "mascot_07.png",
-      "src": "assets/mascots/mascot_07.png"
-    },
-    {
-      "name": "mascot_08.png",
-      "src": "assets/mascots/mascot_08.png"
-    },
-    {
-      "name": "mascot_09.png",
-      "src": "assets/mascots/mascot_09.png"
-    },    
-	{
-      "name": "mascot_10.png",
-      "src": "assets/mascots/mascot_10.png"
-    },{
-      "name": "mascot_11.png",
-      "src": "assets/mascots/mascot_11.png"
+      "id": "90sParty",
+      "title": "90's Party",
+      "mascots": [
+        {
+          "name": "mascot_90_01.png",
+          "src": "assets/mascots/90lar/mascot_90_01.png"
+        },
+        {
+          "name": "mascot_90_02.png",
+          "src": "assets/mascots/90lar/mascot_90_02.png"
+        },
+        {
+          "name": "mascot_90_03.png",
+          "src": "assets/mascots/90lar/mascot_90_03.png"
+        },
+        {
+          "name": "mascot_90_05.png",
+          "src": "assets/mascots/90lar/mascot_90_05.png"
+        },
+        {
+          "name": "mascot_90_06.png",
+          "src": "assets/mascots/90lar/mascot_90_06.png"
+        },
+        {
+          "name": "mascot_90_09.png",
+          "src": "assets/mascots/90lar/mascot_90_09.png"
+        },
+        {
+          "name": "mascot_90_10.png",
+          "src": "assets/mascots/90lar/mascot_90_10.png"
+        },
+        {
+          "name": "mascot_90_12.png",
+          "src": "assets/mascots/90lar/mascot_90_12.png"
+        },
+        {
+          "name": "mascot_90_14.png",
+          "src": "assets/mascots/90lar/mascot_90_14.png"
+        },
+        {
+          "name": "mascot_90_15.png",
+          "src": "assets/mascots/90lar/mascot_90_15.png"
+        },
+        {
+          "name": "mascot_90_16.png",
+          "src": "assets/mascots/90lar/mascot_90_16.png"
+        },
+        {
+          "name": "mascot_90_17.png",
+          "src": "assets/mascots/90lar/mascot_90_17.png"
+        },
+        {
+          "name": "mascot_90_18.png",
+          "src": "assets/mascots/90lar/mascot_90_18.png"
+        },
+        {
+          "name": "mascot_90_19.png",
+          "src": "assets/mascots/90lar/mascot_90_19.png"
+        },
+        {
+          "name": "mascot_90_20.png",
+          "src": "assets/mascots/90lar/mascot_90_20.png"
+        },
+        {
+          "name": "mascot_90_21.png",
+          "src": "assets/mascots/90lar/mascot_90_21.png"
+        },
+        {
+          "name": "mascot_90_22.png",
+          "src": "assets/mascots/90lar/mascot_90_22.png"
+        },
+        {
+          "name": "mascot_90_23.png",
+          "src": "assets/mascots/90lar/mascot_90_23.png"
+        },
+        {
+          "name": "mascot_90_24.png",
+          "src": "assets/mascots/90lar/mascot_90_24.png"
+        },
+        {
+          "name": "mascot_90_25.png",
+          "src": "assets/mascots/90lar/mascot_90_25.png"
+        },
+        {
+          "name": "mascot_90_26.png",
+          "src": "assets/mascots/90lar/mascot_90_26.png"
+        },
+        {
+          "name": "mascot_90_27.png",
+          "src": "assets/mascots/90lar/mascot_90_27.png"
+        },
+        {
+          "name": "mascot_90_28.png",
+          "src": "assets/mascots/90lar/mascot_90_28.png"
+        }
+      ]
     }
   ]
 }
