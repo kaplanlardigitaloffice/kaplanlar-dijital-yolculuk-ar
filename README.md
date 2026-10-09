@@ -1,15 +1,22 @@
-# Kaplanlar WebAR V54 — Live Assets
+# Kaplanlar WebAR V60 — Embedded Concepts
 
-Bu sürüm manifest bağımlılığını kaldırır.
+Bu sürüm konsept ve maskot listesini GitHub API, GitHub Action veya mascots.json üzerinden okumaz.
 
-Uygulama her açılışta doğrudan public GitHub repository içeriğini okur:
-- `assets/mascots/` içindeki tüm PNG/JPG/JPEG/WEBP dosyaları otomatik seçenek olur.
-- `assets/` kökünde adı `mascot_` veya `maskot_` ile başlayan görseller de otomatik seçenek olur.
-- Dosya SHA'sı URL'e eklenerek browser cache'i kırılır.
-- GitHub API geçici olarak erişilemezse `assets/mascots.json` fallback'i kullanılır.
-- O da yoksa ilk 3 maskot gösterilir.
+Doğrudan aşağıdaki dosyaları kontrol eder:
 
-En sorunsuz kullanım:
-Yeni maskotları doğrudan `assets/mascots/` klasörüne atın.
-Dosya adının ne olduğu önemli değildir.
-GitHub Pages deployment tamamlandıktan sonra uygulamada Yenile'ye basın.
+Kurumsal:
+- assets/mascots/kurumsal/mascot_01.png
+- ...
+- assets/mascots/kurumsal/mascot_11.png
+
+90's Party:
+- assets/mascots/90lar/mascot_90_01.png
+
+Davranış:
+- Dosya gerçekten mevcutsa maskot gösterilir.
+- Konseptte tek bir geçerli görsel bile yoksa konsept gizlenir.
+- Kurumsal klasöründe 11 dosyanın hepsi mevcutsa 11 seçenek görünür.
+- GitHub API / Actions / JSON parse / cache sorunları devreden çıkarılmıştır.
+
+Yeni maskot eklerken bu sürümde app.js içindeki EMBEDDED_CONCEPTS listesine yol eklemek gerekir.
+Bu sürüm öncelikle mevcut konsept ekranını kararlı şekilde çalıştırmak için hazırlanmıştır.

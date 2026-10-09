@@ -3041,3 +3041,117 @@ body.landscape-preferred .placement-guide{
     height:66px !important;
   }
 }
+
+
+/* V57 — V54-compatible concepts + front/rear camera */
+.mascot-picker{
+  bottom:calc(110px + env(safe-area-inset-bottom)) !important;
+}
+
+.concept-track{
+  pointer-events:auto;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:0 18px 9px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x proximity;
+}
+.concept-track::-webkit-scrollbar{display:none}
+
+.concept-chip{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;
+  background:rgba(5,7,11,.52);
+  color:rgba(255,255,255,.70);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  font-size:11px;
+  font-weight:750;
+  cursor:pointer;
+}
+.concept-chip.is-selected{
+  border-color:rgba(239,35,67,.88);
+  background:rgba(195,23,68,.20);
+  color:#fff;
+}
+
+.camera-flip-btn{
+  min-width:58px;
+  height:48px;
+  padding:0 9px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background:rgba(7,9,13,.58);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  cursor:pointer;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.camera-flip-icon{font-size:19px;line-height:1}
+.camera-flip-label{font-size:10px;font-weight:800}
+.camera-flip-btn.is-front{
+  border-color:rgba(239,35,67,.65);
+  background:rgba(195,23,68,.16);
+}
+
+@media(max-width:720px){
+  .mascot-picker{
+    bottom:calc(102px + env(safe-area-inset-bottom)) !important;
+  }
+  .concept-track{
+    padding-left:14px;
+    padding-right:14px;
+  }
+  .concept-chip{
+    min-height:32px;
+    padding:0 12px;
+    font-size:10px;
+  }
+  .camera-flip-btn{
+    min-width:52px;
+    height:46px;
+    border-radius:15px;
+  }
+}
+
+
+/* V59 — reliable concept selector visibility */
+.concept-track{
+  min-height:38px !important;
+  display:flex !important;
+  align-items:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:90 !important;
+}
+.concept-track.is-hidden{
+  display:none !important;
+}
+.concept-chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+
+/* V60 — deterministic local concepts */
+.concept-track{
+  min-height:38px !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+.concept-track.is-hidden{
+  display:none !important;
+}

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070a0f" />
   <title>Kaplanlar Dijital Yolculuğu</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css?v=54" />
+  <link rel="stylesheet" href="styles.css?v=60" />
 </head>
 <body>
   <main id="app">
@@ -91,22 +91,13 @@
         </div>
       </div>
 
-      <div id="mascotPicker" class="mascot-picker" aria-label="Maskot seçimi">
+      <div id="mascotPicker" class="mascot-picker" aria-label="Konsept ve maskot seçimi">
         <div class="mascot-picker-head">
-          <div class="mascot-picker-label">Maskot seç</div>
+          <div class="mascot-picker-label">Konsept &amp; Maskot</div>
           <button id="refreshMascotsBtn" type="button" class="mascot-refresh-btn">Yenile</button>
         </div>
-        <div id="mascotTrack" class="mascot-track" role="list">
-          <button type="button" class="mascot-option is-selected" data-src="assets/mascots/mascot_01.png" aria-label="Maskot 1">
-            <img src="assets/mascots/mascot_01.png?v=52" alt="" draggable="false" />
-          </button>
-          <button type="button" class="mascot-option" data-src="assets/mascots/mascot_02.png" aria-label="Maskot 2">
-            <img src="assets/mascots/mascot_02.png?v=52" alt="" draggable="false" />
-          </button>
-          <button type="button" class="mascot-option" data-src="assets/mascots/mascot_03.png" aria-label="Maskot 3">
-            <img src="assets/mascots/mascot_03.png?v=52" alt="" draggable="false" />
-          </button>
-        </div>
+        <div id="conceptTrack" class="concept-track" role="tablist" aria-label="Konsept seçimi"></div>
+        <div id="mascotTrack" class="mascot-track" role="list" aria-label="Maskot seçimi"></div>
       </div>
 
       <div class="premium-camera-bar" aria-label="Kamera kontrolleri">
@@ -116,6 +107,10 @@
           <button id="lens15Btn" class="lens-chip" data-zoom="1.5">1.5×</button>
           <button id="lens2Btn" class="lens-chip" data-zoom="2">2×</button>
         </div>
+        <button id="cameraFlipBtn" class="camera-flip-btn" type="button" aria-label="Ön kameraya geç" title="Kamerayı çevir">
+          <span class="camera-flip-icon" aria-hidden="true">↻</span>
+          <span class="camera-flip-label">Ön</span>
+        </button>
         <button id="recordBtn" class="record-btn" aria-label="Video kaydı başlat" title="Video kaydı">
           <span class="record-dot"></span><span class="record-label">Kayıt</span>
         </button>
@@ -218,6 +213,6 @@
       }
     });
   </script>
-  <script src="app.js?v=54"></script>
+  <script src="app.js?v=60"></script>
 </body>
 </html>
