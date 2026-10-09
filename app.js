@@ -279,44 +279,44 @@
   }
 
 
-  async function imageExists(src){
-    return await new Promise(resolve => {
-      const img = new Image();
-      const timer = setTimeout(() => resolve(false), 5000);
-      img.onload = () => { clearTimeout(timer); resolve(true); };
-      img.onerror = () => { clearTimeout(timer); resolve(false); };
-      img.src = src + (src.includes('?') ? '&' : '?') + `check=${Date.now()}`;
-    });
-  }
-
   async function loadConceptsFromJson(){
     try{
-      const res = await fetch(`assets/mascots.json?v=${Date.now()}`, { cache:'no-store' });
-      if(!res.ok) return [];
+      const res = await fetch(`assets/mascots.json?v=${Date.now()}`, {
+        cache:'no-store'
+      });
+
+      if(!res.ok){
+        throw new Error(`mascots.json HTTP ${res.status}`);
+      }
+
       const data = await res.json();
       const rawConcepts = Array.isArray(data?.concepts) ? data.concepts : [];
-      const concepts = [];
 
-      for(const concept of rawConcepts){
-        const validMascots = [];
-        for(const [index,item] of (concept.mascots || []).entries()){
-          const mascot = typeof item === 'string'
-            ? {name:item.split('/').pop(), src:item}
-            : {name:item?.name || `Maskot ${index+1}`, src:item?.src};
-          if(mascot.src && await imageExists(mascot.src)) validMascots.push(mascot);
-        }
+      return rawConcepts
+        .map((concept, conceptIndex) => ({
+          id: concept?.id || concept?.title || `concept-${conceptIndex + 1}`,
+          title: concept?.title || concept?.id || `Konsept ${conceptIndex + 1}`,
+          mascots: (Array.isArray(concept?.mascots) ? concept.mascots : [])
+            .map((item, index) => {
+              if(typeof item === 'string'){
+                return {
+                  name: item.split('/').pop(),
+                  src: item
+                };
+              }
 
-        if(validMascots.length){
-          concepts.push({
-            id:concept.id || concept.title || `concept-${concepts.length+1}`,
-            title:concept.title || concept.id || `Konsept ${concepts.length+1}`,
-            mascots:validMascots
-          });
-        }
-      }
-      return concepts;
-    }catch(e){
-      console.warn('mascots.json yüklenemedi', e);
+              return {
+                name: item?.name || `Maskot ${index + 1}`,
+                src: item?.src
+              };
+            })
+            .filter(item => item && item.src)
+        }))
+        // A concept is hidden only when its JSON mascot list is truly empty.
+        .filter(concept => concept.mascots.length > 0);
+
+    }catch(err){
+      console.warn('mascots.json yüklenemedi:', err);
       return [];
     }
   }
@@ -351,47 +351,102 @@
     conceptTrack.classList.toggle('is-hidden', visibleConcepts.length === 0);
   }
 
+  let mascotThumbObserver = null;
+
+  function ensureMascotObserver(){
+    if(mascotThumbObserver) mascotThumbObserver.disconnect();
+
+    if(!('IntersectionObserver' in window)){
+      mascotThumbObserver = null;
+      return;
+    }
+
+    mascotThumbObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if(!entry.isIntersecting) return;
+        const img = entry.target;
+        if(img.dataset.src && !img.src) img.src = img.dataset.src;
+        mascotThumbObserver?.unobserve(img);
+      });
+    }, {
+      root: mascotTrack,
+      rootMargin:'0px 220px 0px 220px',
+      threshold:0.01
+    });
+  }
+
+  function loadMascotPreview(img){
+    if(!img || img.src) return;
+    if(img.dataset.src) img.src = img.dataset.src;
+  }
+
   function renderMascotPicker(options){
     if(!mascotTrack) return;
+
+    mascotThumbObserver?.disconnect();
     mascotTrack.innerHTML = '';
 
     mascotOptions = (Array.isArray(options) ? options : [])
       .filter(item => item && item.src);
+
+    ensureMascotObserver();
 
     mascotOptions.forEach((item, index) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'mascot-option' + (index === 0 ? ' is-selected' : '');
       btn.setAttribute('role','listitem');
-      btn.setAttribute('aria-label', item.name || `Maskot ${index+1}`);
+      btn.setAttribute('aria-label', item.name || `Maskot ${index + 1}`);
+
+      const wrap = document.createElement('span');
+      wrap.className = 'mascot-preview-wrap';
+
+      const skeleton = document.createElement('span');
+      skeleton.className = 'mascot-preview-skeleton';
+      wrap.appendChild(skeleton);
 
       const img = document.createElement('img');
-      img.src = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
       img.alt = '';
       img.draggable = false;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.dataset.src = item.thumb || item.src;
 
-      btn.appendChild(img);
+      img.addEventListener('load', () => wrap.classList.add('is-loaded'));
+      img.addEventListener('error', () => btn.classList.add('is-broken'));
+
+      wrap.appendChild(img);
+      btn.appendChild(wrap);
 
       btn.addEventListener('click', e => {
         e.preventDefault();
         e.stopPropagation();
 
-        selectedMascotSrc = item.src + (item.src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
+        selectedMascotSrc = item.src;
         crossfadeFrame(selectedMascotSrc);
 
         mascotTrack.querySelectorAll('.mascot-option')
           .forEach(el => el.classList.remove('is-selected'));
         btn.classList.add('is-selected');
+
+        loadMascotPreview(img);
       });
 
       mascotTrack.appendChild(btn);
+
+      if(index < 5 || !mascotThumbObserver){
+        loadMascotPreview(img);
+      } else {
+        mascotThumbObserver.observe(img);
+      }
     });
 
     if(mascotOptions.length){
-      selectedMascotSrc = mascotOptions[0].src + (mascotOptions[0].src.includes('?') ? '&' : '?') + `v=${Date.now()}`;
+      selectedMascotSrc = mascotOptions[0].src;
       crossfadeFrame(selectedMascotSrc);
     }
   }
+
 
   async function loadMascotOptions(){
     mascotConcepts = await loadConceptsFromJson();
