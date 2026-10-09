@@ -28,6 +28,26 @@
         {
           "name": "mascot_09.png",
           "src": "assets/mascots/kurumsal/mascot_09.png"
+        },
+        {
+          "name": "mascot_10.png",
+          "src": "assets/mascots/kurumsal/mascot_10.png"
+        },
+        {
+          "name": "mascot_11.png",
+          "src": "assets/mascots/kurumsal/mascot_10.png"
+        },
+        {
+          "name": "mascot_12.png",
+          "src": "assets/mascots/kurumsal/mascot_12.png"
+        },
+        {
+          "name": "mascot_13.png",
+          "src": "assets/mascots/kurumsal/mascot_13.png"
+        },
+        {
+          "name": "mascot_14.png",
+          "src": "assets/mascots/kurumsal/mascot_14.png"
         }
       ]
     },
@@ -78,6 +98,54 @@
 	{
           "name": "mascot_90_16.png",
           "src": "assets/mascots/90lar/mascot_90_16.png"
+        },
+	{
+          "name": "mascot_90_17.png",
+          "src": "assets/mascots/90lar/mascot_90_17.png"
+        },
+	{
+          "name": "mascot_90_18.png",
+          "src": "assets/mascots/90lar/mascot_90_18.png"
+        },
+	{
+          "name": "mascot_90_19.png",
+          "src": "assets/mascots/90lar/mascot_90_19.png"
+        },
+	{
+          "name": "mascot_90_20.png",
+          "src": "assets/mascots/90lar/mascot_90_20.png"
+        },
+	{
+          "name": "mascot_90_21.png",
+          "src": "assets/mascots/90lar/mascot_90_21.png"
+        },
+	{
+          "name": "mascot_90_22.png",
+          "src": "assets/mascots/90lar/mascot_90_22.png"
+        },
+	{
+          "name": "mascot_90_23.png",
+          "src": "assets/mascots/90lar/mascot_90_23.png"
+        },
+	{
+          "name": "mascot_90_24.png",
+          "src": "assets/mascots/90lar/mascot_90_24.png"
+        },
+	{
+          "name": "mascot_90_25.png",
+          "src": "assets/mascots/90lar/mascot_90_25.png"
+        },
+	{
+          "name": "mascot_90_26.png",
+          "src": "assets/mascots/90lar/mascot_90_26.png"
+        },
+	{
+          "name": "mascot_90_27.png",
+          "src": "assets/mascots/90lar/mascot_90_27.png"
+        },
+	{
+          "name": "mascot_90_28.png",
+          "src": "assets/mascots/90lar/mascot_90_28.png"
         }
       ]
     }
